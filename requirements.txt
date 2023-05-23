@@ -1,0 +1,6 @@
+PySide6
+ez-icons
+ez_qt
+ez_settings
+ez_utils
+qt_material
