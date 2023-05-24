@@ -5,7 +5,7 @@ _Don't worry, I'll change the name to something cool later_ 🌴🥥
 Questions or concerns? Find me under the name `coconutcockpit` on my Discord server: https://discord.gg/jQbWJSK2cw
 
 ## 🙋‍What is it?
-It's a small program that you can run alongside DCS to influence a mission while it's running. I use it a lot quickly trying out scripting ideas without having to reload the mission all the time. It's a REPL (Read-Eval-Print-Loop) that I kind of based on Autodesk Maya's script editor.
+It's a small program that you can run alongside DCS to influence a mission while it's running. I use it a lot to quickly try out scripting ideas without having to reload the mission all the time. It's a REPL (Read-Eval-Print-Loop) that I kind of based on Autodesk Maya's script editor.
 
 Right now it's only designed to run in an active mission, but this might change in the future. 
 
