@@ -48,7 +48,7 @@ The REPL is actually just a small part of larger project I had in mind. Future p
 - and more!
 
 ## 🤙Contributing
-I am not a hardcore code or programmer, so if you are and want to lend a helping hand, GREAT! Fork the project and create a PR with your changes.
+I am not a hardcore coder or programmer, so if you are and want to lend a helping hand, GREAT! Fork the project and create a PR with your changes.
 
 
 ## 📖License
