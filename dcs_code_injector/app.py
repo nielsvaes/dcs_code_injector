@@ -7,8 +7,10 @@ from ez_settings import EZSettings
 from qt_material import apply_stylesheet
 from .dcs_code_injector_window import CodeInjectorWindow
 
-
-SETTINGS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
+SETTINGS_DIR = os.path.join(os.path.expanduser('~'),'Documents', "dcs_code_injector")
+if not os.path.exists(SETTINGS_DIR):
+    os.makedirs(SETTINGS_DIR)
+SETTINGS_PATH = os.path.join(SETTINGS_DIR, "settings.json")
 SPLASH_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "splashscreens")
 EZSettings(SETTINGS_PATH)
 
