@@ -3,11 +3,11 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-data_files_to_include = ["*.png", "*.jpg"]
+data_files_to_include = ["*.png", "*.jpg", "*.xml"]
 
 setup(
     name='dcs-code-injector',
-    version='1.0.1',
+    version='1.0.2',
     packages=find_packages(),
     package_data={
         "": data_files_to_include,
