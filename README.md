@@ -6,10 +6,15 @@ Questions or concerns? Find me under the name `coconutcockpit` on my Discord ser
 
 Find a video of an (older version) in action here: https://youtu.be/m2tGLFgLp8Y
 
+![01](https://github.com/nielsvaes/dcs_code_injector/assets/7821618/e2bfb31a-87c7-4258-9cf8-89e78bb8c65f)
+
 ## 🙋‍What is it?
 It's a small program that you can run alongside DCS to influence a mission while it's running. I use it a lot to quickly try out scripting ideas without having to reload the mission all the time. It's a REPL (Read-Eval-Print-Loop) that I kind of based on Autodesk Maya's script editor.
 
 Right now it's only designed to run in an active mission, but this might change in the future. 
+
+
+
 
 ## 💾 How to download
 You can grab a .zip file that contains an executable that should run on any Windows machine from the releases page here: https://github.com/nielsvaes/dcs_code_injector/releases
