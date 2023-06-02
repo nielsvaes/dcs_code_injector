@@ -1,8 +1,8 @@
 -r requirements.txt
+build
 GitPython
 Nuitka
-setuptools
-wheel
-twine
-build
 packaging
+setuptools
+twine
+wheel
