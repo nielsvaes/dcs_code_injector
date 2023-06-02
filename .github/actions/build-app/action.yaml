@@ -13,5 +13,6 @@ runs:
       shell: bash
       run: |
         pip install nuitka
+        dci_ver=$(python latest_tag.py . 0)
         python -m nuitka --enable-plugin=pyside6 --onefile --include-package-data=dcs_code_injector.ui.splashscreens --include-package-data=qt_material --include-package-data=dcs_code_injector.ui.icons --disable-console --assume-yes-for-downloads --output-filename=DCS.Code.Injector --windows-icon-from-ico=dcs_code_injector/ui/icons/icon.ico main.py
-        mv *.exe dist
+        mv DCS.Code.Injector.exe dist/DCS.Code.Injector-$dci_ver.exe
