@@ -1,0 +1,17 @@
+name: Build packages
+description: Assembles the full application.
+runs:
+  using: composite
+  steps:
+    - name: "Build python package"
+      shell: bash
+      run: |
+        python -m build
+        python -m twine check dist/*
+
+    - name: "Build binary package"
+      shell: bash
+      run: |
+        pip install nuitka
+        python -m nuitka --enable-plugin=pyside6 --onefile --include-package-data=dcs_code_injector.ui.splashscreens --include-package-data=qt_material --include-package-data=dcs_code_injector.ui.icons --disable-console --output-filename=DCS.Code.Injector --windows-icon-from-ico=dcs_code_injector/ui/icons/icon.ico main.py
+        mv *.exe dist
