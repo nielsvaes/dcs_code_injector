@@ -58,8 +58,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            DCS.Code.Injector_${{ steps.version.outputs.number }}.exe
-            dcs-code-injector-${{ steps.version.outputs.number }}-py3-none-any.whl
+            DCS.Code.Injector-${{ steps.version.outputs.number }}.exe
+            dcs_code_injector-${{ steps.version.outputs.number }}-py3-none-any.whl
             dcs-code-injector-${{ steps.version.outputs.number }}.tar.gz
 
   pypi:
