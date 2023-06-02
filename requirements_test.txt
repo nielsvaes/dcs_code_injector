@@ -1,0 +1,8 @@
+-r requirements.txt
+build
+GitPython
+Nuitka
+packaging
+setuptools
+twine
+wheel

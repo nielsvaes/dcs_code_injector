@@ -1,6 +1,6 @@
-PySide6
 ez-icons
 ez_qt
 ez_settings
 ez_utils
+PySide6
 qt_material

@@ -1,0 +1,92 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Set up Python environment"
+        uses: ./.github/actions/setup-python
+
+      - name: "Build packages"
+        uses: ./.github/actions/build-app
+
+      - name: "Upload dci binaries"
+        uses: actions/upload-artifact@v3
+        with:
+          name: dci_binaries
+          path: dist/
+
+  github:
+    needs: [build]
+    runs-on: windows-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Set up Python environment"
+        uses: ./.github/actions/setup-python
+
+      - name: "Download dci binaries"
+        uses: actions/download-artifact@v3
+        with:
+          name: dci_binaries
+
+      - name: "Release Notes"
+        id: version
+        run: |
+          $dci_ver = python latest_tag.py . 0
+          Write-Output "number=$dci_ver" >> $env:GITHUB_OUTPUT
+          $changelog = Get-Content .\CHANGELOG.md
+          $last_change = ($changelog | Select-String -Pattern "^##\s" | Select-Object -Skip 1 -First 1).LineNumber - 3
+          ($changelog | Select-Object -First $last_change -Skip 1) -join "`n" | Out-File .\RELEASENOTES.md
+
+      - name: "Create Release"
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.REL_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          name: DCS Code Injector ${{ steps.version.outputs.number }}
+          body_path: RELEASENOTES.md
+          draft: false
+          prerelease: false
+          files: |
+            DCS.Code.Injector-${{ steps.version.outputs.number }}.exe
+            dcs_code_injector-${{ steps.version.outputs.number }}-py3-none-any.whl
+            dcs-code-injector-${{ steps.version.outputs.number }}.tar.gz
+
+  pypi:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Set up Python environment"
+        uses: ./.github/actions/setup-python
+
+      - name: "Download dci binaries"
+        uses: actions/download-artifact@v3
+        with:
+          name: dci_binaries
+
+      - name: "Prepare files"
+        run: |
+          mkdir dist
+          mv *.whl *.tar.gz dist/
+          ls -la dist/
+
+      - name: "Deploy to PyPI"
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip_existing: true
+          verbose: true
