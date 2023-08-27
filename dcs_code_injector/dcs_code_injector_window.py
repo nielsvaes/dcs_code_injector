@@ -44,6 +44,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         LogHighlighter(self.txt_log.document())
         self.read_log()
 
+        self.connect_ui_signals()
         self.load()
 
         self.log_font_size = 10
@@ -52,13 +53,16 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.server = Server()
         self.server_thread = QThread()
         self.server.moveToThread(self.server_thread)
+        self.server_thread.started.connect(self.server.start)
+        self.server.connected.connect(self.on_connected)
+        self.server.received.connect(self.on_received)
+        self.server.disconnected.connect(self.on_disconnected)
+        self.server_thread.start()
 
         self.timer = QTimer()
         self.timer.setInterval(500)
         self.timer.timeout.connect(self.read_log)
         self.timer.start()
-
-        self.connect_signals()
 
         QCoreApplication.instance().aboutToQuit.connect(self.stop_server)
 
@@ -103,18 +107,12 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.previous = lines
         self.last_log_file_size = file_size
 
-    def connect_signals(self):
+    def connect_ui_signals(self):
         self.tab_widget.tabBarDoubleClicked.connect(self.rename_tab)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.action_settings.triggered.connect(self.show_settings)
         self.action_clear_log.triggered.connect(self.clear_log)
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
-
-        self.server_thread.started.connect(self.server.start)
-        self.server.connected.connect(self.on_connected)
-        self.server.received.connect(self.on_received)
-        self.server.disconnected.connect(self.on_disconnected)
-        self.server_thread.start()
 
     def on_received(self, data):
         try:

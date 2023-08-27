@@ -68,6 +68,7 @@
      <string>Tools</string>
     </property>
     <addaction name="action_clear_log"/>
+    <addaction name="action_add_new_tab"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -92,6 +93,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+L</string>
+   </property>
+  </action>
+  <action name="action_add_new_tab">
+   <property name="text">
+    <string>Add new tab</string>
    </property>
   </action>
  </widget>
