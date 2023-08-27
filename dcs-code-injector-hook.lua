@@ -63,7 +63,9 @@ local function init()
                 [[
                     local ok, err = pcall(a_do_script(
                             [=[
-                                --<SCRIPT>
+                            ]]
+                            .. response ..
+                            [[
                             ]=]
                     ))
                     if not ok then
@@ -71,7 +73,7 @@ local function init()
                     end
                 ]]
 
-                net.dostring_in('mission', mission_string:gsub("--<SCRIPT>", response))
+                net.dostring_in('mission', mission_string)
             else
                 if err == "closed" then
                     DCSCI.closed = true
