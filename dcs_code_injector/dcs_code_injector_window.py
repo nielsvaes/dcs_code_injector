@@ -231,7 +231,10 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
+
             text = self.tab_widget.currentWidget().textCursor().selection().toPlainText()
+            if text == "":
+                text = self.tab_widget.currentWidget().toPlainText()
             self.set_server_response(text)
 
         if event.key() == Qt.Key_F5:
