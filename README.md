@@ -37,8 +37,9 @@ When you open the application for the first time, you need to tell it where your
 Press `Ctrl-N` to make a new tab. This will add a new `UNNAMED` tab. `UNNAMED` tabs are not saved on shutdown, so it's best to rename the tab if you want to keep the code around for later use. Double-click on the tab name to rename it. Anything you write in a tab is saved automatically.
 
 Select a block of code and press `Ctrl-Enter` or `Ctrl-Return` to execute it. The code block will appear in the log panel and will be run inside the mission. Any errors in the code will show up as red in the log.
+If nothing is selected, all the code in the currrent active code tab will be executed
 
-You can save code you run often to `Favorite` buttons. I use this to reload MOOSE for example, when I've made changes to it. To save a button, select the code block and drag it to the blank strip beneath the code panel and above the connection icon. Pick a name and click save. To delete a `Favorite` button, right click on it and click `Delete`.
+You can save code you run often to `Favorite` buttons. I use this to reload MOOSE for example, when I've made changes to it. To save a button, select the lines of code you want to save and drag them to the blank strip beneath the code panel and above the connection icon. Pick a name and click save. To delete a `Favorite` button, right click on it and click `Delete`.
 
 ## 🗺️Future plans
 #### REPL
