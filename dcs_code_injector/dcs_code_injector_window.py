@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
+from PySide6.QtCore import Qt
 import os
 import json
 from functools import partial
@@ -16,6 +17,7 @@ from .lua_syntax_highlighter import SimpleLuaHighlighter
 from .log_highlighter import LogHighlighter
 # from .variables_tree import VariablesTree
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
+from .ui.dcs_code_injector_search_ui import Ui_Form
 ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 CODE_INSERTS = {
@@ -39,6 +41,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.last_log_file_size = 0
 
+        self.txt_log = LogView()
+        self.txt_log_layout.addWidget(self.txt_log)
         self.log_file = EZSettings().get("log_file", "")
         self.previous = []
         LogHighlighter(self.txt_log.document())
@@ -112,6 +116,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.action_settings.triggered.connect(self.show_settings)
         self.action_clear_log.triggered.connect(self.clear_log)
+        self.action_search.triggered.connect(self.txt_log.toggle_search)
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
 
     def on_received(self, data):
@@ -385,6 +390,51 @@ class FavoritesWidget(QWidget):
             event.accept()
         else:
             event.ignore()
+
+class LogView(QPlainTextEdit):
+    def __init__(self):
+        super().__init__()
+        self.search_widget = SearchBox()
+        self.search_widget.txt_search.returnPressed.connect(self.search_text)
+
+        self.last_search_position = 0
+
+        self.grid_layout = QGridLayout(self)
+        self.grid_layout.setContentsMargins(0, 10 , 15, 0)
+        self.grid_layout.addWidget(self.search_widget, 0, 0, 0, 0, Qt.AlignTop | Qt.AlignRight)
+        self.setReadOnly(True)
+
+
+    def toggle_search(self):
+        self.search_widget.setVisible(not self.search_widget.isVisible())
+        self.search_widget.txt_search.clear()
+        self.search_widget.txt_search.setFocus()
+
+    def search_text(self):
+        search_query = self.search_widget.txt_search.text()
+
+        if self.search_widget.btn_case_sensitive.isChecked():
+            cursor = self.document().find(search_query, self.last_search_position, QTextDocument.FindFlag.FindCaseSensitively)
+        else:
+            cursor = self.document().find(search_query, self.last_search_position)
+
+
+        if not cursor.isNull():
+            self.last_search_position = cursor.position()
+            self.setTextCursor(cursor)
+        else:
+            self.last_search_position = 0
+
+
+class SearchBox(QWidget, Ui_Form):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.setVisible(False)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Escape:
+            self.setVisible(False)
 
 
 def build_menu_from_action_list(actions, menu=None, is_sub_menu=False):

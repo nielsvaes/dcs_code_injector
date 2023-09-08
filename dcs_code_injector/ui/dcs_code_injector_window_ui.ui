@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>863</width>
+    <width>981</width>
     <height>665</height>
    </rect>
   </property>
@@ -16,19 +16,12 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QSplitter" name="log_code_splitter">
+     <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QSplitter" name="log_variables_splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QPlainTextEdit" name="txt_log">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-       </widget>
+      <widget class="QWidget" name="horizontalLayoutWidget">
+       <layout class="QHBoxLayout" name="txt_log_layout"/>
       </widget>
       <widget class="QTabWidget" name="tab_widget">
        <property name="autoFillBackground">
@@ -53,7 +46,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>863</width>
+     <width>981</width>
      <height>22</height>
     </rect>
    </property>
@@ -69,6 +62,7 @@
     </property>
     <addaction name="action_clear_log"/>
     <addaction name="action_add_new_tab"/>
+    <addaction name="action_search"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -98,6 +92,17 @@
   <action name="action_add_new_tab">
    <property name="text">
     <string>Add new tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_search">
+   <property name="text">
+    <string>Search Log</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

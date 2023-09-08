@@ -1,3 +1,6 @@
+## 1.0.6
+* Added Ctrl-F to search the log
+
 ## 1.0.4
 * Version bump to test build and deploy pipeline
 
