@@ -41,6 +41,8 @@ If nothing is selected, all the code in the currrent active code tab will be exe
 
 You can save code you run often to `Favorite` buttons. I use this to reload MOOSE for example, when I've made changes to it. To save a button, select the lines of code you want to save and drag them to the blank strip beneath the code panel and above the connection icon. Pick a name and click save. To delete a `Favorite` button, right click on it and click `Delete`.
 
+Press `Ctrl-F` to open a search box in the Log view. The `Cc` toggles between case sensitive and insensitive search.
+
 ## 🗺️Future plans
 #### REPL
 - Better code highlighting
