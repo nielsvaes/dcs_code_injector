@@ -1,4 +1,4 @@
-## 1.0.6
+## 1.1.0
 * Added Ctrl-F to search the log
 
 ## 1.0.4
