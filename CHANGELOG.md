@@ -1,3 +1,6 @@
+## 1.1.1
+* Bugfix when creating new code tab
+
 ## 1.1.0
 * Added Ctrl-F to search the log
 

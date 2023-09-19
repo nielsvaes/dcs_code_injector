@@ -117,6 +117,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_settings.triggered.connect(self.show_settings)
         self.action_clear_log.triggered.connect(self.clear_log)
         self.action_search.triggered.connect(self.txt_log.toggle_search)
+        self.action_add_new_tab.triggered.connect(lambda _: self.add_new_tab(name="UNNAMED", code="-- add code here"))
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
 
     def on_received(self, data):
@@ -244,9 +245,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         if event.key() == Qt.Key_F5:
             self.read_log()
-
-        if event.key() == Qt.Key_N and event.modifiers() == Qt.ControlModifier:
-            self.add_new_tab(name="UNNAMED", code="-- add code here")
 
         if event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
             self.tab_widget.currentWidget().font_size += 1

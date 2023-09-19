@@ -7,7 +7,7 @@ data_files_to_include = ["*.png", "*.jpg", "*.xml"]
 
 setup(
     name='dcs-code-injector',
-    version='1.1.0',
+    version='1.1.1',
     packages=find_packages(),
     package_data={
         "": data_files_to_include,
