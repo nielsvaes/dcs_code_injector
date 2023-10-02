@@ -29,6 +29,26 @@ It also makes an entry point to the application, so type `dcs-code-injector` to 
 ## 🪝 Add the hook
 Find a file called `dcs-code-injector-hook.lua` in the Github repository or in the downloaded .zip archive. You need to copy this file into the `Scripts/Hooks` folder inside your `Saved Games/DCS.openbeta` or `Saved Games/DCS` folder. Remember where you put the `SRS` hook file? This one goes right next alongside it :)
 
+## ✒️ Edit MissionScripting.lua
+In the `Scripts` folder if your DCS install directory, there's a file called `MissionScripting.lua`. Comment out the lines that start with `_G` to make sure the hook can load everything it needs to: 
+
+
+`MissionScripting.lua:`
+```Lua
+local function sanitizeModule(name)
+	_G[name] = nil
+	package.loaded[name] = nil
+end
+
+do
+	sanitizeModule('os')
+	sanitizeModule('io')
+	sanitizeModule('lfs')
+	--_G['require'] = nil
+	--_G['loadlib'] = nil
+	--_G['package'] = nil
+end
+```
 
 ## 🥇First time use
 When you open the application for the first time, you need to tell it where your `dcs.log` file is saved. Browse to the file (it's in your `Saved Games` folder and then just close the `Settings` dialog to save the path. You will then be presented with the main window and the log panel. The log gets updated automatically while DCS is running, so it's easy to see if you're getting any errors or warnings when running code. 
