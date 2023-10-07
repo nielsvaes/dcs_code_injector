@@ -78,7 +78,7 @@
    <item row="0" column="4">
     <widget class="QPushButton" name="btn_browse">
      <property name="text">
-      <string>...</string>
+      <string>Browse ...</string>
      </property>
     </widget>
    </item>

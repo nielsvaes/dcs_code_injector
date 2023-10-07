@@ -2,10 +2,8 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from ez_settings import EZSettings
 from functools import partial
-import ez_icons
 import os
 from .ui.dcs_code_injector_settings_ui import Ui_settings_dialog
-from . import utils
 ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 
@@ -50,7 +48,6 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         self.btn_save.clicked.connect(self.save)
         self.btn_cancel.clicked.connect(self.close)
 
-
         self.load()
 
     def open_file_browser(self):
@@ -83,31 +80,27 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 class LogHighlightingRulesTree(QTreeWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setColumnCount(3)
         self.setHeaderLabels(["String or regex", "Back color", "Text color"])
+
         self.itemDoubleClicked.connect(self.item_double_clicked)
-        self.itemChanged.connect(self.item_changed)
+
         self.setRootIsDecorated(False)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.setColumnWidth(0, 350)
+
+        self.setColumnWidth(0, 500)
         self.setColumnWidth(1, 130)
         self.setColumnWidth(2, 130)
 
-        self.previous_text = {}
-
     def add_item(self, data=None):
         if data is None:
-            item = QTreeWidgetItem(["STRING OR REGEX", "(0, 0, 0, 0)", "(255, 255, 255, 255)"])
-            item.setIcon(0, QIcon(ez_icons.get(ez_icons.c.white, ez_icons.i.color_lens)))
+            item = QTreeWidgetItem(["String or regex", "(0, 0, 0, 0)", "(255, 255, 255, 255)"])
         else:
             item = QTreeWidgetItem([data[0], data[1], data[2]])
 
+        font = QFont("Courier New")
+        item.setFont(0, font)
         item.setFlags(item.flags() | Qt.ItemIsEditable)
-        item.setCheckState(0, Qt.Unchecked)
-        item.setIcon(0, QIcon(ez_icons.get(ez_icons.c.white, ez_icons.i.color_lens)))
         self.addTopLevelItem(item)
-
-        self.previous_text[item] = item.text(0)
 
     def set_data(self, data):
         for name, color_list in data.items():
@@ -123,21 +116,8 @@ class LogHighlightingRulesTree(QTreeWidget):
             data[name] = [background_color, foreground_color]
         return data
 
-    def item_changed(self, item: QTreeWidgetItem, column):
-        if column == 0 and self.previous_text.get(item) != item.text(0):
-            self.blockSignals(True)
-
-            if item.checkState() == Qt.Checked:
-                is_regex = utils.check_regex(item.text(0))
-                if is_regex:
-                    item.setIcon(0, QIcon(ez_icons.get(ez_icons.c.white, ez_icons.i.developer_mode)))
-                else:
-                    item.setIcon(0, QIcon(ez_icons.get(ez_icons.c.white, ez_icons.i.text_format)))
-
-            self.previous_text[item] = item.text(0)
-            self.blockSignals(False)
-
-    def item_double_clicked(self, item: QTreeWidgetItem, column):
+    @staticmethod
+    def item_double_clicked(item: QTreeWidgetItem, column):
         if column == 1 or column == 2:
             rgb = eval(item.text(column))
             initial_color = QColor(*rgb)

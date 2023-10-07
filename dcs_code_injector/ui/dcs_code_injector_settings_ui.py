@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dcs_code_injector_settings_ui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -105,7 +105,7 @@ class Ui_settings_dialog(object):
         self.btn_cancel.setText(QCoreApplication.translate("settings_dialog", u"Cancel", None))
         self.temp_folder_3.setText(QCoreApplication.translate("settings_dialog", u"Log file path", None))
         self.label_2.setText(QCoreApplication.translate("settings_dialog", u"Log highlighting rules", None))
-        self.btn_browse.setText(QCoreApplication.translate("settings_dialog", u"...", None))
+        self.btn_browse.setText(QCoreApplication.translate("settings_dialog", u"Browse ...", None))
         self.btn_save.setText(QCoreApplication.translate("settings_dialog", u"Save", None))
         self.txt_log_file.setPlaceholderText("")
         self.btn_add_item.setText(QCoreApplication.translate("settings_dialog", u"Add highlighting item", None))

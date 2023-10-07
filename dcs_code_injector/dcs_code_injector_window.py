@@ -2,28 +2,25 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtCore import Qt
+
 import os
 import json
+import pathlib
+import shutil
+
 from functools import partial
 from ez_settings import EZSettings
 from datetime import datetime, timedelta
-# import ez_icons
-# from ez_icons import i, c
 
 from .settings_dialog import SettingsDialog
-
 from .server import Server
 from .lua_syntax_highlighter import SimpleLuaHighlighter
 from .log_highlighter import LogHighlighter
 # from .variables_tree import VariablesTree
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 from .ui.dcs_code_injector_search_ui import Ui_Form
-ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
-CODE_INSERTS = {
-    "base": ["BASE:I()", -1],
-    "msg_to_all": ["MessageToAll()", -1]
-}
+ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -75,7 +72,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.on_disconnected()
 
         self.show()
-        self.show_settings()
 
     def read_log(self):
         if not os.path.isfile(self.log_file):
@@ -119,16 +115,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_clear_log.triggered.connect(self.clear_log)
         self.action_search.triggered.connect(self.txt_log.toggle_search)
         self.action_add_new_tab.triggered.connect(lambda _: self.add_new_tab(name="UNNAMED", code="-- add code here"))
+        self.action_copy_hook_file.triggered.connect(self.copy_hook_file)
+        self.action_increase_code_font_size.triggered.connect()
+
+
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
-
-    def on_received(self, data):
-        try:
-            data = json.loads(data.strip())
-            if data.get("connection", "") == "not_active":
-                print("connection closed!")
-
-        except json.decoder.JSONDecodeError as err:
-            print(err)
 
     def on_connected(self):
         pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_done.png"))
@@ -211,15 +202,9 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         if code != "" and not tab_name == "UNNAMED":
             EZSettings().set(tab_name, code)
 
-    def show_settings(self):
-        dlg = SettingsDialog()
-        dlg.exec_()
-        self.setWindowTitle(f"DCS Code Injector - {dlg.txt_log_file.text()}")
-
     def add_code_to_log(self, text):
         line_number = 1
-        numbered_lines = []
-        numbered_lines.append("\n------------------- CODE BLOCK -------------------")
+        numbered_lines = ["\n------------------- CODE BLOCK -------------------"]
         for line in text.split("\n"):
             line = f"{str(line_number).zfill(2)}          {line}"
             numbered_lines.append(line)
@@ -236,6 +221,33 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def set_server_response(self, code):
         self.add_code_to_log(code)
         self.server.response = code
+
+    @staticmethod
+    def copy_hook_file():
+        from .hook_string import hook_string
+        print(hook_string)
+
+        saved_games_hooks_folder = pathlib.Path(EZSettings().get("log_file")).parent.parent / "Scripts" / "Hooks"
+        if saved_games_hooks_folder.exists():
+            with open(saved_games_hooks_folder / "dcs-code-injector-hook.lua", "w") as writefile:
+                writefile.write(hook_string)
+        else:
+            QMessageBox.warning(None, "DCS Code Injector", "Can't find the Hooks folder! Did you set the path to your dcs.log file in the Settings?")
+
+    @staticmethod
+    def on_received(data):
+        try:
+            data = json.loads(data.strip())
+            if data.get("connection", "") == "not_active":
+                print("connection closed!")
+
+        except json.decoder.JSONDecodeError as err:
+            print(err)
+
+    @staticmethod
+    def show_settings():
+        dlg = SettingsDialog()
+        dlg.exec_()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
@@ -390,6 +402,7 @@ class FavoritesWidget(QWidget):
             event.accept()
         else:
             event.ignore()
+
 
 class LogView(QPlainTextEdit):
     def __init__(self):
