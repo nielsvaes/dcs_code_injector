@@ -75,6 +75,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.on_disconnected()
 
         self.show()
+        self.show_settings()
 
     def read_log(self):
         if not os.path.isfile(self.log_file):
@@ -198,7 +199,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
     def load(self):
         for setting in EZSettings().get_all_settings():
-            if setting != "log_file" and setting != "shift_hours" and not setting.startswith("btn_"):
+            #need to clean this up
+            if setting != "log_file" and setting != "shift_hours" and setting != "log_highlight_rules" and not setting.startswith("btn_"):
                 self.add_new_tab(name=setting, code=EZSettings().get(setting))
             if setting.startswith("btn_"):
                 self.favorites_widget.add_new_button(setting.replace("btn_", ""), EZSettings().get(setting))
