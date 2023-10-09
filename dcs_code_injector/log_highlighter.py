@@ -2,11 +2,13 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 from ez_settings import EZSettings
 
+from .constants import sk
+
 class LogHighlighter(QSyntaxHighlighter):
     def __init__(self, doc):
         self.rules = {}
 
-        for regex, color_list in EZSettings().get("log_highlight_rules", {}).items():
+        for regex, color_list in EZSettings().get(sk.log_highlight_rules, {}).items():
             self.rules[regex] = self.make_format(background_color=QColor(*eval(color_list[0])), foreground_color=QColor(*eval(color_list[1])))
 
         super().__init__(doc)

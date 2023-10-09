@@ -1,38 +1,15 @@
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
+
 from ez_settings import EZSettings
 from functools import partial
 import os
+
 from .ui.dcs_code_injector_settings_ui import Ui_settings_dialog
+from .constants import DEFAULT_HIGHLIGHTING_RULES, sk
+
 ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
-
-DEFAULT_HIGHLIGHTING_RULES = {
-        "^.*\\b(SCRIPTING)\\b.*$": [
-            "(0, 0, 0, 0)",
-            "(85, 255, 255, 255)"
-        ],
-        "^.*\\b(WARNING)\\b.*$": [
-            "(0, 0, 0, 0)",
-            "(255, 255, 0, 255)"
-        ],
-        "^.*\\b(ERROR|stack traceback|in function|in main chunk)\\b.*$": [
-            "(255, 0, 0, 255)",
-            "(255, 255, 255, 255)"
-        ],
-        "^.*(\\/E:).*$": [
-            "(255, 0, 0, 255)",
-            "(255, 255, 255, 255)"
-        ],
-        "^.*\\b(ERROR_ONCE)\\b.*$": [
-            "(255, 139, 30, 255)",
-            "(255, 255, 255, 255)"
-        ],
-        "^.*\\b(MOOSE INCLUDE END|MOOSE STATIC INCLUDE START)\\b.*$": [
-            "(0, 0, 0, 0)",
-            "(54, 194, 72, 255)"
-        ]
-}
 
 class SettingsDialog(QDialog, Ui_settings_dialog):
     def __init__(self):
@@ -62,18 +39,18 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
             self.txt_log_file.setText(file_path)
 
     def load(self):
-        self.txt_log_file.setText(EZSettings().get("log_file", ""))
-        self.spin_offset_time.setValue(EZSettings().get("shift_hours", 0))
-        hl_rules = EZSettings().get("log_highlight_rules", {})
+        self.txt_log_file.setText(EZSettings().get(sk.log_file, ""))
+        self.spin_offset_time.setValue(EZSettings().get(sk.shift_hours, 0))
+        hl_rules = EZSettings().get(sk.log_highlight_rules, {})
         if len(hl_rules):
             self.tree_hilite_rules.set_data(hl_rules)
         else:
             self.tree_hilite_rules.set_data(DEFAULT_HIGHLIGHTING_RULES)
 
     def save(self):
-        EZSettings().set("log_file", self.txt_log_file.text())
-        EZSettings().set("shift_hours", self.spin_offset_time.value())
-        EZSettings().set("log_highlight_rules", self.tree_hilite_rules.get_data())
+        EZSettings().set(sk.log_file, self.txt_log_file.text())
+        EZSettings().set(sk.shift_hours, self.spin_offset_time.value())
+        EZSettings().set(sk.log_highlight_rules, self.tree_hilite_rules.get_data())
         self.close()
 
 

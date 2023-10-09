@@ -144,7 +144,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(shortcut)
         self.action_decrease_code_font_size.setText(QCoreApplication.translate("MainWindow", u"Decrease code font size", None))
 #if QT_CONFIG(shortcut)
-        self.action_decrease_code_font_size.setShortcut("")
+        self.action_decrease_code_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+-", None))
 #endif // QT_CONFIG(shortcut)
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
