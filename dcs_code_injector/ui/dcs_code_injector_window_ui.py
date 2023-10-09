@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dcs_code_injector_window_ui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -35,6 +35,16 @@ class Ui_MainWindow(object):
         self.action_add_new_tab.setObjectName(u"action_add_new_tab")
         self.action_search = QAction(MainWindow)
         self.action_search.setObjectName(u"action_search")
+        self.action_copy_hook_file = QAction(MainWindow)
+        self.action_copy_hook_file.setObjectName(u"action_copy_hook_file")
+        self.action_increase_log_font_size = QAction(MainWindow)
+        self.action_increase_log_font_size.setObjectName(u"action_increase_log_font_size")
+        self.action_decrease_log_font_size = QAction(MainWindow)
+        self.action_decrease_log_font_size.setObjectName(u"action_decrease_log_font_size")
+        self.action_increase_code_font_size = QAction(MainWindow)
+        self.action_increase_code_font_size.setObjectName(u"action_increase_code_font_size")
+        self.action_decrease_code_font_size = QAction(MainWindow)
+        self.action_decrease_code_font_size.setObjectName(u"action_decrease_code_font_size")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
@@ -69,6 +79,8 @@ class Ui_MainWindow(object):
         self.menuFile.setObjectName(u"menuFile")
         self.menuTools = QMenu(self.menubar)
         self.menuTools.setObjectName(u"menuTools")
+        self.menuView = QMenu(self.menubar)
+        self.menuView.setObjectName(u"menuView")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -76,10 +88,19 @@ class Ui_MainWindow(object):
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
         self.menuFile.addAction(self.action_settings)
-        self.menuTools.addAction(self.action_clear_log)
         self.menuTools.addAction(self.action_add_new_tab)
+        self.menuTools.addSeparator()
+        self.menuTools.addAction(self.action_clear_log)
         self.menuTools.addAction(self.action_search)
+        self.menuTools.addSeparator()
+        self.menuTools.addAction(self.action_copy_hook_file)
+        self.menuView.addAction(self.action_increase_log_font_size)
+        self.menuView.addAction(self.action_decrease_log_font_size)
+        self.menuView.addSeparator()
+        self.menuView.addAction(self.action_increase_code_font_size)
+        self.menuView.addAction(self.action_decrease_code_font_size)
 
         self.retranslateUi(MainWindow)
 
@@ -108,7 +129,25 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(shortcut)
         self.action_search.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+F", None))
 #endif // QT_CONFIG(shortcut)
+        self.action_copy_hook_file.setText(QCoreApplication.translate("MainWindow", u"Copy hook file", None))
+        self.action_increase_log_font_size.setText(QCoreApplication.translate("MainWindow", u"Increase log font size", None))
+#if QT_CONFIG(shortcut)
+        self.action_increase_log_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Shift+Num++", None))
+#endif // QT_CONFIG(shortcut)
+        self.action_decrease_log_font_size.setText(QCoreApplication.translate("MainWindow", u"Decrease log font size", None))
+#if QT_CONFIG(shortcut)
+        self.action_decrease_log_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Shift+Num+-", None))
+#endif // QT_CONFIG(shortcut)
+        self.action_increase_code_font_size.setText(QCoreApplication.translate("MainWindow", u"Increase code font size", None))
+#if QT_CONFIG(shortcut)
+        self.action_increase_code_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl++", None))
+#endif // QT_CONFIG(shortcut)
+        self.action_decrease_code_font_size.setText(QCoreApplication.translate("MainWindow", u"Decrease code font size", None))
+#if QT_CONFIG(shortcut)
+        self.action_decrease_code_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+-", None))
+#endif // QT_CONFIG(shortcut)
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
+        self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
     # retranslateUi
 

@@ -2,48 +2,42 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtCore import Qt
+
 import os
 import json
+import pathlib
+
 from functools import partial
 from ez_settings import EZSettings
 from datetime import datetime, timedelta
-# import ez_icons
-# from ez_icons import i, c
 
 from .settings_dialog import SettingsDialog
-
 from .server import Server
 from .lua_syntax_highlighter import SimpleLuaHighlighter
 from .log_highlighter import LogHighlighter
-# from .variables_tree import VariablesTree
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 from .ui.dcs_code_injector_search_ui import Ui_Form
-ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
+from .constants import sk
 
-CODE_INSERTS = {
-    "base": ["BASE:I()", -1],
-    "msg_to_all": ["MessageToAll()", -1]
-}
+ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowIcon(QIcon(ICON))
-        self.resize(1280, 800)
+        self.resize(EZSettings().get(sk.main_win_width, 1280), EZSettings().get(sk.main_win_height, 800))
+        self.move(EZSettings().get(sk.main_win_pos_x, 0), EZSettings().get(sk.main_win_pos_y, 0))
         self.setWindowTitle("DCS Code Injector")
 
         self.favorites_widget = FavoritesWidget()
         self.favorites_layout.addWidget(self.favorites_widget)
 
-        # self.variables_tree = VariablesTree()
-        # self.variables_layout.addWidget(self.variables_tree)
-
         self.last_log_file_size = 0
 
         self.txt_log = LogView()
         self.txt_log_layout.addWidget(self.txt_log)
-        self.log_file = EZSettings().get("log_file", "")
+        self.log_file = EZSettings().get(sk.log_file, "")
         self.previous = []
         LogHighlighter(self.txt_log.document())
         self.read_log()
@@ -51,8 +45,10 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.connect_ui_signals()
         self.load()
 
-        self.log_font_size = 10
-        self.update_log_font_size()
+        self.txt_log.setStyleSheet(f"font: {EZSettings().get('log_font_size', 10)}pt 'Courier New';")
+        for i in range(self.tab_widget.count()):
+            self.tab_widget.widget(i).font_size = EZSettings().get(sk.code_font_size, 10)
+            self.tab_widget.widget(i).update_document_size()
 
         self.server = Server()
         self.server_thread = QThread()
@@ -79,7 +75,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def read_log(self):
         if not os.path.isfile(self.log_file):
             self.show_settings()
-            self.log_file = EZSettings().get("log_file", "")
+            self.log_file = EZSettings().get(sk.log_file, "")
 
         file_size = os.path.getsize(self.log_file)
         if file_size > self.last_log_file_size:
@@ -92,7 +88,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
                     line = line.replace("                    ", "   ")
                     time_str = line[0:22]
                     time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    shift_hours = EZSettings().get("shift_hours", 0)
+                    shift_hours = EZSettings().get(sk.shift_hours, 0)
                     time += timedelta(hours=shift_hours)
                     shifted_time_str = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
                     line = line.replace(time_str, shifted_time_str)
@@ -118,16 +114,33 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_clear_log.triggered.connect(self.clear_log)
         self.action_search.triggered.connect(self.txt_log.toggle_search)
         self.action_add_new_tab.triggered.connect(lambda _: self.add_new_tab(name="UNNAMED", code="-- add code here"))
+        self.action_copy_hook_file.triggered.connect(self.copy_hook_file)
+        self.action_increase_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), True))
+        self.action_decrease_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), False))
+        self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
+        self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
+
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
 
-    def on_received(self, data):
-        try:
-            data = json.loads(data.strip())
-            if data.get("connection", "") == "not_active":
-                print("connection closed!")
+    def adjust_font_size(self, widget, increase):
+        if widget == self.tab_widget.currentWidget():
+            size = EZSettings().get(sk.code_font_size, 10)
+            if increase:
+                size += 1
+            else:
+                size -= 1
+            self.tab_widget.currentWidget().font_size = size
+            self.tab_widget.currentWidget().update_document_size()
+            EZSettings().set(sk.code_font_size, size)
 
-        except json.decoder.JSONDecodeError as err:
-            print(err)
+        elif widget == self.txt_log:
+            size = EZSettings().get(sk.log_font_size, 10)
+            if increase:
+                size += 1
+            else:
+                size -= 1
+            self.txt_log.setStyleSheet(f"font: {size}pt 'Courier New';")
+            EZSettings().set(sk.log_font_size, size)
 
     def on_connected(self):
         pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_done.png"))
@@ -150,9 +163,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def clear_log(self):
         self.add_text_to_log("\n" * 60)
 
-    def update_log_font_size(self):
-        self.txt_log.setStyleSheet(f"font: {self.log_font_size}pt 'Courier New';")
-
     def connect_favorite_button(self, favorite_button):
         favorite_button.clicked.connect(partial(self.set_server_response, favorite_button.code))
         favorite_button.open_tab_with_code.connect(partial(self.add_new_tab))
@@ -160,7 +170,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def close_tab(self, tab_index):
         answer = QMessageBox.question(self, 'Close', "Are you sure you want to remove this tab?", QMessageBox.Yes, QMessageBox.No)
         if answer == QMessageBox.Yes:
-            setting_name = self.tab_widget.tabText(tab_index)
+            setting_name = f"code__{self.tab_widget.tabText(tab_index)}"
             if tab_index > 0:
                 new_index = tab_index - 1
             else:
@@ -198,8 +208,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
     def load(self):
         for setting in EZSettings().get_all_settings():
-            if setting != "log_file" and setting != "shift_hours" and not setting.startswith("btn_"):
-                self.add_new_tab(name=setting, code=EZSettings().get(setting))
+            if setting.startswith("code__"):
+                self.add_new_tab(name=setting.replace("code__", ""), code=EZSettings().get(setting))
             if setting.startswith("btn_"):
                 self.favorites_widget.add_new_button(setting.replace("btn_", ""), EZSettings().get(setting))
 
@@ -207,17 +217,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         tab_name = self.tab_widget.tabText(self.tab_widget.currentIndex())
         code = self.tab_widget.currentWidget().toPlainText()
         if code != "" and not tab_name == "UNNAMED":
-            EZSettings().set(tab_name, code)
-
-    def show_settings(self):
-        dlg = SettingsDialog()
-        dlg.exec_()
-        self.setWindowTitle(f"DCS Code Injector - {dlg.txt_log_file.text()}")
+            EZSettings().set(f"code__{tab_name}", code)
 
     def add_code_to_log(self, text):
         line_number = 1
-        numbered_lines = []
-        numbered_lines.append("\n------------------- CODE BLOCK -------------------")
+        numbered_lines = ["\n------------------- CODE BLOCK -------------------"]
         for line in text.split("\n"):
             line = f"{str(line_number).zfill(2)}          {line}"
             numbered_lines.append(line)
@@ -235,27 +239,46 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.add_code_to_log(code)
         self.server.response = code
 
+    @staticmethod
+    def copy_hook_file():
+        from .hook_string import hook_string
+        print(hook_string)
+
+        saved_games_hooks_folder = pathlib.Path(EZSettings().get(sk.log_file)).parent.parent / "Scripts" / "Hooks"
+        if saved_games_hooks_folder.exists():
+            with open(saved_games_hooks_folder / "dcs-code-injector-hook.lua", "w") as writefile:
+                writefile.write(hook_string)
+        else:
+            QMessageBox.warning(None, "DCS Code Injector", "Can't find the Hooks folder! Did you set the path to your dcs.log file in the Settings?")
+
+    @staticmethod
+    def on_received(data):
+        try:
+            data = json.loads(data.strip())
+            if data.get("connection", "") == "not_active":
+                print("connection closed!")
+
+        except json.decoder.JSONDecodeError as err:
+            print(err)
+
+    @staticmethod
+    def show_settings():
+        dlg = SettingsDialog()
+        dlg.exec_()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
-
             text = self.tab_widget.currentWidget().textCursor().selection().toPlainText()
             if text == "":
                 text = self.tab_widget.currentWidget().toPlainText()
             self.set_server_response(text)
 
-        if event.key() == Qt.Key_F5:
-            self.read_log()
-
-        if event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
-            self.tab_widget.currentWidget().font_size += 1
-            self.tab_widget.currentWidget().update_document_size()
-            self.log_font_size = self.tab_widget.currentWidget().font_size
-            self.update_log_font_size()
-        if event.key() == Qt.Key_Down and event.modifiers() == Qt.ControlModifier:
-            self.tab_widget.currentWidget().font_size -= 1
-            self.tab_widget.currentWidget().update_document_size()
-            self.log_font_size = self.tab_widget.currentWidget().font_size
-            self.update_log_font_size()
+    def closeEvent(self, event):
+        EZSettings().set(sk.main_win_width, self.width())
+        EZSettings().set(sk.main_win_height, self.height())
+        EZSettings().set(sk.main_win_pos_x, self.pos().x())
+        EZSettings().set(sk.main_win_pos_y, self.pos().y())
+        super().closeEvent(event)
 
 
 class CodeTextEdit(QPlainTextEdit):
@@ -388,6 +411,7 @@ class FavoritesWidget(QWidget):
             event.accept()
         else:
             event.ignore()
+
 
 class LogView(QPlainTextEdit):
     def __init__(self):
