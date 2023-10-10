@@ -105,6 +105,7 @@ The REPL is actually just a small part of larger project I had in mind. Future p
 
 ## 🤙Contributing
 I am not a hardcore coder or programmer, so if you are and want to lend a helping hand, GREAT! Fork the project and create a PR with your changes.
+Other ways you can contribute is by reporting issues or posting feature requests on the [Issues](https://github.com/nielsvaes/dcs_code_injector/issues) page of the GitHub repository. I started this project just to make my own life easier, but I would to hear what you might want to use it for!
 
 
 ## 📖License
