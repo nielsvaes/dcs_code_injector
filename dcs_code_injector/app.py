@@ -18,6 +18,16 @@ SPLASH_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "spl
 application = QApplication()
 
 def convert_old_settings():
+    """
+    Converts old settings to a new format if the version is less than 0.
+
+    Checks if a settings file exists at `SETTINGS_PATH`. If it does, the function loads the JSON data from the file.
+    If the settings version is old, it backs up the old settings file, creates a new dictionary with the version set to 1,
+    and iterates over the old data. If a key is not in the `sk` module and does not start with "btn_", it adds the item
+    to the new data with the key prefixed with "code__". Otherwise, it adds the item as is. The new data is then dumped
+    back into the settings file as JSON. Finally, it calls the `EZSettings` function with the settings path.
+    """
+
     if not os.path.isfile(SETTINGS_PATH):
         return
 

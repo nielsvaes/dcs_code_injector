@@ -23,6 +23,11 @@ ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
+        """
+        Constructor for the CodeInjectorWindow class.
+        Initializes the UI and sets up the necessary connections.
+        """
+
         super().__init__()
         self.setupUi(self)
         self.setWindowIcon(QIcon(ICON))
@@ -73,6 +78,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.show()
 
     def read_log(self):
+        """
+        Reads the log file and updates the log view.
+        Handles the time shifting for the log entries.
+        """
+
         if not os.path.isfile(self.log_file):
             self.show_settings()
             self.log_file = EZSettings().get(sk.log_file, "")
@@ -108,6 +118,10 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.last_log_file_size = file_size
 
     def connect_ui_signals(self):
+        """
+        Connects the UI signals to their respective slots.
+        """
+
         self.tab_widget.tabBarDoubleClicked.connect(self.rename_tab)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.action_settings.triggered.connect(self.show_settings)
@@ -123,6 +137,13 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
 
     def adjust_font_size(self, widget, increase):
+        """
+        Adjusts the font size of the given widget.
+
+        :param widget: <QWidget> the widget to adjust the font size for
+        :param increase: <bool> whether to increase or decrease the font size
+        """
+
         if widget == self.tab_widget.currentWidget():
             size = EZSettings().get(sk.code_font_size, 10)
             if increase:
@@ -143,31 +164,60 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             EZSettings().set(sk.log_font_size, size)
 
     def on_connected(self):
+        """
+        Called when the server is connected.
+        Updates the connection status in the UI.
+        """
+
         pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_done.png"))
         pixmap = pixmap.scaledToWidth(20, Qt.SmoothTransformation)
         self.connection_label.setPixmap(pixmap)
         self.statusbar.showMessage("Connected to DCS", 2500)
 
     def on_disconnected(self):
+        """
+        Called when the server is disconnected.
+        Updates the connection status in the UI.
+        """
+
         pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_off.png"))
         pixmap = pixmap.scaledToWidth(20, Qt.SmoothTransformation)
         self.connection_label.setPixmap(pixmap)
         self.statusbar.showMessage("Disconnected from DCS", 2500)
 
     def stop_server(self):
+        """
+        Stops the server and waits for the server thread to finish.
+        """
+
         print("killing server")
         self.server.exit = True
         self.server_thread.quit()
         self.server_thread.wait()
 
     def clear_log(self):
+        """
+        "Clears" the log view by just adding 60 newlines to push everything up
+        """
+
         self.add_text_to_log("\n" * 60)
 
     def connect_favorite_button(self, favorite_button):
+        """
+        Connects the favorite button to its respective slots.
+
+        :param favorite_button: <FavoritesButton> the favorite button to connect
+        """
+
         favorite_button.clicked.connect(partial(self.set_server_response, favorite_button.code))
         favorite_button.open_tab_with_code.connect(partial(self.add_new_tab))
 
     def close_tab(self, tab_index):
+        """
+        This closes the tab at index tab_index
+
+        :param tab_index: <int> number of the tab to close
+        """
         answer = QMessageBox.question(self, 'Close', "Are you sure you want to remove this tab?", QMessageBox.Yes, QMessageBox.No)
         if answer == QMessageBox.Yes:
             setting_name = f"code__{self.tab_widget.tabText(tab_index)}"
@@ -181,6 +231,13 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             EZSettings().remove(setting_name)
 
     def add_new_tab(self, name=None, code=None):
+        """
+        Adds a new tab to the tab widget.
+
+        :param name: <str> the name of the new tab
+        :param code: <str> the code to be displayed in the new tab
+        """
+
         code_text_edit = CodeTextEdit()
         code_text_edit.textChanged.connect(self.save_code)
         self.tab_widget.insertTab(self.tab_widget.count() - 1, code_text_edit, "UNNAMED")
@@ -194,6 +251,10 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.tab_widget.currentWidget().setPlainText("log.write(\"DCS Code Injector\", log.INFO, \"Hello, DCS!\")\n")
 
     def rename_tab(self):
+        """
+        Renames the current tab.
+        """
+
         name, accepted = QInputDialog().getText(self, "DCS Code Injector", "Enter a name for this tab: ", QLineEdit.Normal, "")
         if not accepted:
             return
@@ -207,6 +268,10 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.save_code()
 
     def load(self):
+        """
+        Loads the settings and initializes the UI accordingly.
+        """
+
         for setting in EZSettings().get_all_settings():
             if setting.startswith("code__"):
                 self.add_new_tab(name=setting.replace("code__", ""), code=EZSettings().get(setting))
@@ -214,12 +279,22 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
                 self.favorites_widget.add_new_button(setting.replace("btn_", ""), EZSettings().get(setting))
 
     def save_code(self):
+        """
+        Saves the code in the current tab to the settings.
+        """
+
         tab_name = self.tab_widget.tabText(self.tab_widget.currentIndex())
         code = self.tab_widget.currentWidget().toPlainText()
         if code != "" and not tab_name == "UNNAMED":
             EZSettings().set(f"code__{tab_name}", code)
 
     def add_code_to_log(self, text):
+        """
+        Adds the given as a code block to the log view.
+
+        :param text: <str> the text to be added to the log
+        """
+
         line_number = 1
         numbered_lines = ["\n------------------- CODE BLOCK -------------------"]
         for line in text.split("\n"):
@@ -231,18 +306,34 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.add_text_to_log(complete_text)
 
     def add_text_to_log(self, complete_text):
+        """
+        Adds the given text to the log view.
+
+        :param complete_text: <str> the text to be added to the log
+        """
+
         self.txt_log.moveCursor(QTextCursor.End)
         self.txt_log.insertPlainText(complete_text)
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
     def set_server_response(self, code):
+        """
+        Sets the server response and adds the code to the log. The server response is what's being sent back
+        to DCS.
+
+        :param code: <str> the code to be set as the server response
+        """
+
         self.add_code_to_log(code)
         self.server.response = code
 
     @staticmethod
     def copy_hook_file():
+        """
+        Copies the hook file to the Hooks folder.
+        """
+
         from .hook_string import hook_string
-        print(hook_string)
 
         saved_games_hooks_folder = pathlib.Path(EZSettings().get(sk.log_file)).parent.parent / "Scripts" / "Hooks"
         if saved_games_hooks_folder.exists():
@@ -253,6 +344,12 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
     @staticmethod
     def on_received(data):
+        """
+        Handles the data received from the server. This is basically tells the server that the client is still active
+
+        :param data: <str> the data received from the server
+        """
+
         try:
             data = json.loads(data.strip())
             if data.get("connection", "") == "not_active":
@@ -263,10 +360,20 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
     @staticmethod
     def show_settings():
+        """
+        Shows the settings dialog.
+        """
+
         dlg = SettingsDialog()
         dlg.exec_()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+        """
+        Handles key press events.
+
+        :param event: <QKeyEvent> the key press event
+        """
+
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
             text = self.tab_widget.currentWidget().textCursor().selection().toPlainText()
             if text == "":
@@ -274,6 +381,12 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.set_server_response(text)
 
     def closeEvent(self, event):
+        """
+        Handles the close event of the window, saves the window's position and size before closing
+
+        :param event: <QCloseEvent> the close event
+        """
+
         EZSettings().set(sk.main_win_width, self.width())
         EZSettings().set(sk.main_win_height, self.height())
         EZSettings().set(sk.main_win_pos_x, self.pos().x())
@@ -283,6 +396,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
 class CodeTextEdit(QPlainTextEdit):
     def __init__(self):
+        """
+        Constructor for the CodeTextEdit class.
+        Initializes the text edit and sets up the syntax highlighter.
+        """
+
         super().__init__()
 
         self.font_size = 10
@@ -290,12 +408,29 @@ class CodeTextEdit(QPlainTextEdit):
         SimpleLuaHighlighter(self.document())
 
     def update_document_size(self):
+        """
+        Updates the document size based on the font size.
+        """
+
         self.setStyleSheet(f"font: {self.font_size}pt 'Courier New';")
 
     def get_selected_text(self):
+        """
+        Returns the selected text in the text edit.
+
+        :return: <str> the selected text
+        """
+
         return self.textCursor().selectedText()
 
     def __insert_code(self, text, move_back_pos):
+        """
+        Inserts the given text at the current cursor position.
+
+        :param text: <str> the text to be inserted
+        :param move_back_pos: <int> the number of positions to move the cursor back after inserting the text
+        """
+
         cursor = self.textCursor()
         selected_text = cursor.selection().toPlainText()
         self.insertPlainText(text)
@@ -305,6 +440,12 @@ class CodeTextEdit(QPlainTextEdit):
         self.insertPlainText(selected_text)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+        """
+        Handles key press events.
+
+        :param event: <QKeyEvent> the key press event
+        """
+
         if event.key() == Qt.Key_Slash and event.modifiers() == Qt.ControlModifier:
             cursor = self.textCursor()
             selected_text = cursor.selection().toPlainText()
@@ -345,6 +486,13 @@ class FavoritesButton(QPushButton):
     delete = Signal()
     open_tab_with_code = Signal(str, str)
     def __init__(self, label, code):
+        """
+        Constructor for the FavoritesButton class.
+
+        :param label: <str> the label of the button
+        :param code: <str> the code associated with the button
+        """
+
         super().__init__()
         self.label = label
         self.code = code
@@ -354,6 +502,10 @@ class FavoritesButton(QPushButton):
         self.customContextMenuRequested.connect(self.show_menu)
 
     def show_menu(self):
+        """
+        Shows the context menu for the button.
+        """
+
         build_menu_from_action_list(
             [
                 {"Delete": self.remove},
@@ -361,15 +513,27 @@ class FavoritesButton(QPushButton):
             ])
 
     def remove(self):
+        """
+        Emits the delete signal that will delete the button in the main window
+        """
+
         self.delete.emit()
 
     def open_as_tab(self):
+        """
+        Emits the open_tab_with_code signal with the button's label and code to open a tab in the main window
+        """
+
         self.open_tab_with_code.emit(self.label, self.code)
 
 
 class FavoritesWidget(QWidget):
     new_button_added = Signal(FavoritesButton)
     def __init__(self):
+        """
+        Constructor for the FavoritesWidget class.
+        """
+
         super().__init__()
         self.setAcceptDrops(True)
         self.lay = QHBoxLayout()
@@ -382,6 +546,13 @@ class FavoritesWidget(QWidget):
         # self.setStyleSheet("background-color: white;")
 
     def add_new_button(self, label, code):
+        """
+        Adds a new button to the widget.
+
+        :param label: <str> the label of the button
+        :param code: <str> the code associated with the button
+        """
+
         button = FavoritesButton(label, code)
         self.layout().addWidget(button)
         EZSettings().set(f"btn_{label}", code)
@@ -390,18 +561,42 @@ class FavoritesWidget(QWidget):
         button.delete.connect(partial(self.delete_button, button))
 
     def delete_button(self, button):
+        """
+        Deletes the given button from the widget.
+
+        :param button: <FavoritesButton> the button to delete
+        """
+
         button.setParent(None)
         # self.lay.removeWidget(button)
         button.deleteLater()
         EZSettings().remove(f"btn_{button.text()}")
 
     def dragEnterEvent(self, event):
+        """
+        Handles the drag enter event.
+
+        :param event: <QDragEnterEvent> the drag enter event
+        """
+
         event.accept() if event.mimeData().hasText() else event.ignore()
 
     def dragMoveEvent(self, event):
+        """
+        Handles the drag move event.
+
+        :param event: <QDragMoveEvent> the drag move event
+        """
+
         event.accept() if event.mimeData().hasText() else event.ignore()
 
     def dropEvent(self, event):
+        """
+        Handles the drop event.
+
+        :param event: <QDropEvent> the drop event
+        """
+
         if event.mimeData().hasText():
             event.setDropAction(Qt.CopyAction)
 
@@ -415,6 +610,10 @@ class FavoritesWidget(QWidget):
 
 class LogView(QPlainTextEdit):
     def __init__(self):
+        """
+        Constructor for the LogView class.
+        """
+
         super().__init__()
         self.search_widget = SearchBox()
         self.search_widget.txt_search.returnPressed.connect(self.search_text)
@@ -428,18 +627,25 @@ class LogView(QPlainTextEdit):
 
 
     def toggle_search(self):
+        """
+        Toggles the visibility of the search widget.
+        """
+
         self.search_widget.setVisible(not self.search_widget.isVisible())
         self.search_widget.txt_search.clear()
         self.search_widget.txt_search.setFocus()
 
     def search_text(self):
+        """
+        Searches the text in the log view based on the query in the search widget. Highlights the text when found
+        """
+
         search_query = self.search_widget.txt_search.text()
 
         if self.search_widget.btn_case_sensitive.isChecked():
             cursor = self.document().find(search_query, self.last_search_position, QTextDocument.FindFlag.FindCaseSensitively)
         else:
             cursor = self.document().find(search_query, self.last_search_position)
-
 
         if not cursor.isNull():
             self.last_search_position = cursor.position()
@@ -450,16 +656,35 @@ class LogView(QPlainTextEdit):
 
 class SearchBox(QWidget, Ui_Form):
     def __init__(self):
+        """
+        Constructor for the SearchBox class.
+        """
+
         super().__init__()
         self.setupUi(self)
         self.setVisible(False)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+        """
+        Handles key press events.
+
+        :param event: <QKeyEvent> the key press event
+        """
+
         if event.key() == Qt.Key_Escape:
             self.setVisible(False)
 
 
 def build_menu_from_action_list(actions, menu=None, is_sub_menu=False):
+    """
+    Builds a menu from a list of actions.
+
+    :param actions: <list> the list of actions
+    :param menu: <QMenu> the menu to add the actions to
+    :param is_sub_menu: <bool> whether the menu is a sub-menu
+    :return: <QMenu> the menu with the added actions
+    """
+
     if not menu:
         menu = QMenu()
 

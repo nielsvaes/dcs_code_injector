@@ -26,6 +26,9 @@ DEFAULT_HIGHLIGHTING_RULES = {
 }
 
 class SettingConstants:
+    """
+    Used to easily autocomplete setting names in the code
+    """
     log_highlight_rules = "log_highlight_rules"
     log_file = "log_file"
     shift_hours = "shift_hours"
