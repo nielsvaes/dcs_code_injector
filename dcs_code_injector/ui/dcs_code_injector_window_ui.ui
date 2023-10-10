@@ -55,6 +55,7 @@
      <string>File</string>
     </property>
     <addaction name="action_settings"/>
+    <addaction name="action_back_up_settings_file"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -154,6 +155,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="action_back_up_settings_file">
+   <property name="text">
+    <string>Back up settings file</string>
    </property>
   </action>
  </widget>

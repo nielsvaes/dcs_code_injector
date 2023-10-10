@@ -18,6 +18,7 @@ from .log_highlighter import LogHighlighter
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 from .ui.dcs_code_injector_search_ui import Ui_Form
 from .constants import sk
+from . import versioner
 
 ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
@@ -75,6 +76,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.statusbar.addWidget(self.connection_label)
         self.on_disconnected()
 
+        self.back_up_settings_file()
+
         self.show()
 
     def read_log(self):
@@ -125,6 +128,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.tab_widget.tabBarDoubleClicked.connect(self.rename_tab)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.action_settings.triggered.connect(self.show_settings)
+        self.action_back_up_settings_file.triggered.connect(self.back_up_settings_file)
         self.action_clear_log.triggered.connect(self.clear_log)
         self.action_search.triggered.connect(self.txt_log.toggle_search)
         self.action_add_new_tab.triggered.connect(lambda _: self.add_new_tab(name="UNNAMED", code="-- add code here"))
@@ -357,6 +361,14 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         except json.decoder.JSONDecodeError as err:
             print(err)
+
+    @staticmethod
+    def back_up_settings_file():
+        """
+        Copies the current settings file to a back-up file
+        """
+        versioner.auto_backup_file(EZSettings().get_file_location())
+
 
     @staticmethod
     def show_settings():
