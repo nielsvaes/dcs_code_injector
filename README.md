@@ -1,6 +1,7 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/dcs-code-injector)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/nielsvaes/dcs_code_injector/release.yml)
 ![Discord](https://img.shields.io/discord/1037079186524876820)
+
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F4PYTO7)
 
 # 📲 DCS Code Injector
