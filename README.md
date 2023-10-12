@@ -4,11 +4,16 @@
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F4PYTO7)
 
+# Supported by JetBrains' Open Source Development Project
+<img src="https://github.com/nielsvaes/dcs_code_injector/assets/7821618/af6bdb1f-3dd4-4e27-be43-c03742874f68" alt="JetBrains" width="200"/>
+
+
+
 # 📲 DCS Code Injector
 
 _Don't worry, I'll change the name to something cool later_ 🌴🥥
 
-Questions or concerns? Find me under the name `coconutcockpit` on my Discord server: https://discord.gg/jQbWJSK2cw
+Questions or concerns? Find me under the name `coconutcockpit` on my Discord server here: ![Discord](https://img.shields.io/discord/1037079186524876820)
 
 Here's a video of an older version in action: https://youtu.be/m2tGLFgLp8Y
 
@@ -38,11 +43,10 @@ It also makes an entry point to the application, so type `dcs-code-injector` to 
 All code is written in Python. To make it easier for people who don't have Python installed, I use a package called [Nuitka](https://github.com/Nuitka/Nuitka) to make it an executable that runs on Windows. A side effect of this is that sometimes it triggers antivirus software because they think it's a trojan. It is not. All the code for the program is available here on the github page. If you're running into troubles, it's easier to just use Python to run the program instead of the executable. Feel free to reach out to me if you need help getting it up and running with just Python.
 
 ## 🥇First time use
-When you open the application for the first time, you need to tell it where your `dcs.log` file is saved. Browse to the file (it's in your `Saved Games` folder and then just close the `Settings` dialog to save the path. You will then be presented with the main window and the log panel. The log gets updated automatically while DCS is running, so it's easy to see if you're getting any errors or warnings when running code. 
-
+When you open the application for the first time, you need to tell it where your `dcs.log` file is saved. Browse to the file (it's in your `Saved Games` folder) and save the settings. You will then be presented with the main window and the log panel. The log gets updated automatically while DCS is running, so it's easy to see if you're getting any errors or warnings when running code. 
 
 ## 🪝 Add the hook
-A Lua hook needs to be loaded in order to tell DCS to connect to the application. The easiest way to do this is to go to `Tools > Copy hook file`. 
+A Lua hook needs to be loaded in order to tell DCS to connect to the application. The easiest way to do this is to go to `Tools > Copy hook file`. ⚠️ You need to have set the path to your `dcs.log` file for this to work, since it uses that log's location to figure out where the hook should go
 
 ![image](https://github.com/nielsvaes/dcs_code_injector/assets/7821618/d7f3b81f-180e-4c54-ab22-2b649ea4d75f)
 
