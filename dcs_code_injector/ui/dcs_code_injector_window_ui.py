@@ -18,7 +18,7 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QMainWindow,
     QMenu, QMenuBar, QSizePolicy, QSplitter,
-    QStatusBar, QTabWidget, QWidget)
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -49,7 +49,15 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.splitter = QSplitter(self.centralwidget)
+        self.favorites_layout = QHBoxLayout()
+        self.favorites_layout.setObjectName(u"favorites_layout")
+
+        self.gridLayout.addLayout(self.favorites_layout, 1, 0, 1, 1)
+
+        self.main_splitter = QSplitter(self.centralwidget)
+        self.main_splitter.setObjectName(u"main_splitter")
+        self.main_splitter.setOrientation(Qt.Horizontal)
+        self.splitter = QSplitter(self.main_splitter)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
         self.horizontalLayoutWidget = QWidget(self.splitter)
@@ -63,13 +71,19 @@ class Ui_MainWindow(object):
         self.tab_widget.setAutoFillBackground(True)
         self.tab_widget.setTabsClosable(True)
         self.splitter.addWidget(self.tab_widget)
+        self.main_splitter.addWidget(self.splitter)
+        self.variables_splitter = QSplitter(self.main_splitter)
+        self.variables_splitter.setObjectName(u"variables_splitter")
+        self.variables_splitter.setOrientation(Qt.Vertical)
+        self.variablesLayoutWidget = QWidget(self.variables_splitter)
+        self.variablesLayoutWidget.setObjectName(u"variablesLayoutWidget")
+        self.variables_layout = QVBoxLayout(self.variablesLayoutWidget)
+        self.variables_layout.setObjectName(u"variables_layout")
+        self.variables_layout.setContentsMargins(0, 0, 0, 0)
+        self.variables_splitter.addWidget(self.variablesLayoutWidget)
+        self.main_splitter.addWidget(self.variables_splitter)
 
-        self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-
-        self.favorites_layout = QHBoxLayout()
-        self.favorites_layout.setObjectName(u"favorites_layout")
-
-        self.gridLayout.addLayout(self.favorites_layout, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.main_splitter, 0, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)

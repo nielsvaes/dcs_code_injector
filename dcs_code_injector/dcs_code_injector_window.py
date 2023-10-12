@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 
 from .settings_dialog import SettingsDialog
 from .server import Server
+from .variables_tree import VariablesTreeView
 from .lua_syntax_highlighter import SimpleLuaHighlighter
 from .log_highlighter import LogHighlighter
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
@@ -46,6 +47,32 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.previous = []
         LogHighlighter(self.txt_log.document())
         self.read_log()
+
+        self.variables_tree = VariablesTreeView()
+        self.variables_layout.addWidget(self.variables_tree)
+
+        TEST_STRING = """
+        {
+            "group": "plane",
+            "unit_count": 30,
+            "planes": {
+                "1" : "FA-18",
+                "2" : "F-16C",
+                "3" : "F-16C",
+                "ammo": {
+                    "bombs": "gbu39",
+                    "shells" : 4
+
+                }
+             },
+            "zones": ["zone_01", "zone_02"]
+        }
+        """
+
+        self.variables_tree.update_json(TEST_STRING)
+
+        self.server_respsonse = {}
+
 
         self.connect_ui_signals()
         self.load()
@@ -316,16 +343,18 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.txt_log.insertPlainText(complete_text)
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
-    def set_server_response(self, code):
+    def set_server_response(self, code, variables=[]):
         """
         Sets the server response and adds the code to the log. The server response is what's being sent back
         to DCS.
 
         :param code: <str> the code to be set as the server response
         """
+        self.server_respsonse["lua_code"] = code
+        self.server_respsonse["variables"].extend(variables)
 
         self.add_code_to_log(code)
-        self.server.response = code
+        self.server.response = json.dumps(self.server_respsonse)
 
     @staticmethod
     def copy_hook_file():

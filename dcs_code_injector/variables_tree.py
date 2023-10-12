@@ -1,93 +1,176 @@
-from PySide6.QtWidgets import *
-from PySide6.QtGui import *
-from PySide6.QtCore import *
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QTimer
+from PySide6.QtWidgets import QApplication, QTreeView, QVBoxLayout, QWidget
+import sys
 import json
-from ez_utils import io_utils
-from ez_qt import tree_widget
 
-VARIABLES_FILE = "C:/temp/watch_variables.json"
+class Node:
+    def __init__(self, data, parent=None):
+        self._data = data
+        self._children = []
+        self._parent = parent
+        if parent is not None:
+            parent.add_child(self)
 
-class VariablesTree(QTreeWidget):
-    def __init__(self):
-        super(VariablesTree, self).__init__()
-        self.setHeaderLabels(["Var", "Value"])
-        self.__previous_values = {}
+    def add_child(self, child):
+        self._children.append(child)
 
-        # self.timer = QTimer()
-        # self.timer.setInterval(250)
-        # self.timer.timeout.connect(self.update_view)
-        # self.timer.start()
+    def child(self, row):
+        return self._children[row]
 
-    def update_view(self):
-        info_dict = io_utils.read_json(VARIABLES_FILE)
-        to_remove = []
+    def child_count(self):
+        return len(self._children)
 
-        for var_name, var_value in self.__previous_values.items():
-            if not var_name in info_dict:
-                to_remove.append(self.get_item_with_text(var_name, 0))
+    def column_count(self):
+        return 2
 
-            new_value = info_dict.get(var_name)
-            item = self.get_item_with_text(var_name, 0)
-            if item is None:
-                item = QTreeWidgetItem()
-                item.setText(0, var_name)
-                item.setText(1, str(new_value))
-                self.addTopLevelItem(item)
-
-            if var_value != new_value:
-                item.setText(1, str(new_value))
-
-        self.remove_items(to_remove)
-        self.__previous_values = info_dict
-        self.resize_columns()
-
-    def get_item_with_text(self, text, column_index):
-        """
-        Returns a QTreeWidgetItem that matches the selected text for the selected column
-
-        :param tree_widget: QTreeWidget you want to search in
-        :param text: <string> text
-        :param column_index: <int> column number
-        :return: QTreeWidgetItem if found or None if not found
-        """
-        try:
-            iterator = QTreeWidgetItemIterator(self)
-            while iterator:
-                if iterator.value().text(column_index) == text:
-                    return iterator.value()
-                iterator += 1
-        except:
-            return None
-
+    def data(self, column):
+        if column == 0:
+            return self._data[0]
+        if column == 1:
+            return self._data[1]
         return None
 
-    def remove_items(self, items=[], selected=False):
-        """
-        Removes the passed items from the tree widget
+    def parent(self):
+        return self._parent
 
-        :param tree_widget: QTreeWidget to remove items from
-        :param items: <list> items you want to remove
-        :param selected: <bool> if set to True, will remove the selected items
-        :return:
-        """
-        if selected:
-            items = self.selectedItems()
+    def row(self):
+        if self._parent is not None:
+            return self._parent._children.index(self)
+        return 0
 
-        root = self.invisibleRootItem()
-        for item in items:
-            (item.parent() or root).removeChild(item)
+class VariablesModel(QAbstractItemModel):
+    def __init__(self, root, parent=None):
+        super().__init__(parent)
+        self._rootNode = root
 
-    def resize_columns(self, columns="all"):
-        """
-        Sets the column size to the minimal amount needed
+    def update_root(self, root):
+        self.beginResetModel()
+        self._rootNode = root
+        self.endResetModel()
 
-        :param tree_widget: QTreeWidget you want to restructure
-        :param columns: <string> | <list> either the string "all" or a list with specific column numbers
-        :return:
-        """
-        if columns == "all":
-            for column in range(self.columnCount()):
-                self.resizeColumnToContents(column)
+    def rowCount(self, parent=QModelIndex()):
+        if parent.column() > 0:
+            return 0
+        if not parent.isValid():
+            parentNode = self._rootNode
         else:
-            for column in columns:
-                self.resizeColumnToContents(column)
+            parentNode = parent.internalPointer()
+        return parentNode.child_count()
+
+    def columnCount(self, parent=QModelIndex()):
+        return 2
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        node = index.internalPointer()
+        if role == Qt.DisplayRole:
+            return node.data(index.column())
+        return None
+
+    def headerData(self, section, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            if section == 0:
+                return "Variable"
+            if section == 1:
+                return "Value"
+        return None
+
+    def index(self, row, column, parent):
+        if not self.hasIndex(row, column, parent):
+            return QModelIndex()
+        parentNode = parent.internalPointer() if parent.isValid() else self._rootNode
+        childItem = parentNode.child(row)
+        if childItem:
+            return self.createIndex(row, column, childItem)
+        return QModelIndex()
+
+    def parent(self, index):
+        if not index.isValid():
+            return QModelIndex()
+        childNode = index.internalPointer()
+        parentNode = childNode.parent()
+        if parentNode == self._rootNode:
+            return QModelIndex()
+        return self.createIndex(parentNode.row(), 0, parentNode)
+
+
+class VariablesTreeView(QTreeView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # self.setAlternatingRowColors(True)
+        self.setStyleSheet("QTreeView::item { padding-top: -3px; padding-bottom: -3px; }")
+
+    def update_json(self, json_str):
+        json_obj = json.loads(json_str)
+        root_node = parse_json(json_obj)
+        if self.model() is None:
+            model = VariablesModel(root_node)
+            self.setModel(model)
+        else:
+            self.model().update_root(root_node)
+        self.expandAll()
+        self.setRootIsDecorated(False)
+
+    def start_updates(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_random_json)
+        self.timer.start(100)  # update every 0.1 seconds
+
+    def update_random_json(self):
+        import random
+        json_str = json.dumps({
+            "random_number": random.randint(1, 100),
+            "more_data": {
+                "nested_number": random.randint(1, 100),
+                "nested_list": [random.randint(1, 100) for _ in range(3)]
+            }
+        })
+        self.update_json(json_str)
+
+    def drawBranches(self, painter, rect, index) -> None:
+        pass
+
+
+def parse_json(data, parent=None):
+    if parent is None:
+        parent = Node(("root", "root"))
+    if type(data) is dict:
+        for key, value in data.items():
+            if type(value) is dict or type(value) is list:
+                new_parent = Node((key, ""), parent)
+                parse_json(value, new_parent)
+            else:
+                Node((key, value), parent)
+    elif type(data) is list:
+        Node((parent.data(0), ', '.join(map(str, data))), parent)
+    else:
+        Node((parent.data(0), data), parent)
+    return parent
+
+
+
+# app = QApplication(sys.argv)
+# widget = JsonTreeView()
+# widget.show()
+# widget.start_updates()
+#
+json_str = """
+{
+    "name": "John",
+    "age": 30,
+    "cars": {
+        "car1" : "Ford",
+        "car2" : "BMW",
+        "car3" : "Fiat",
+        "bugatti": {
+            "driver": "Mikey",
+            "tires" : 4
+
+        }
+     },
+    "pets": ["Dog", "Cat"]
+}
+"""
+# # widget.update_json(json_str)
+# sys.exit(app.exec())

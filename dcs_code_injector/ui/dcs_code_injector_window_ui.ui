@@ -15,29 +15,42 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QWidget" name="horizontalLayoutWidget">
-       <layout class="QHBoxLayout" name="txt_log_layout"/>
-      </widget>
-      <widget class="QTabWidget" name="tab_widget">
-       <property name="autoFillBackground">
-        <bool>true</bool>
-       </property>
-       <property name="currentIndex">
-        <number>-1</number>
-       </property>
-       <property name="tabsClosable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </widget>
-    </item>
     <item row="1" column="0">
      <layout class="QHBoxLayout" name="favorites_layout"/>
+    </item>
+    <item row="0" column="0">
+     <widget class="QSplitter" name="main_splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QWidget" name="horizontalLayoutWidget">
+        <layout class="QHBoxLayout" name="txt_log_layout"/>
+       </widget>
+       <widget class="QTabWidget" name="tab_widget">
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <property name="currentIndex">
+         <number>-1</number>
+        </property>
+        <property name="tabsClosable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QSplitter" name="variables_splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QWidget" name="variablesLayoutWidget">
+        <layout class="QVBoxLayout" name="variables_layout"/>
+       </widget>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

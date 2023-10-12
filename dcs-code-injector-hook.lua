@@ -1,5 +1,9 @@
 package.path = package.path .. ";.\\LuaSocket\\?.lua"
 package.cpath = package.cpath .. ";.\\LuaSocket\\?.dll"
+package.path  = package.path ..  ";.\\Scripts\\?.lua"
+
+
+local JSON = require("json")
 
 DCSCI = {}
 DCSCI.host = "localhost"
@@ -58,22 +62,26 @@ local function init()
             until err or chunk == nil
 
             if response:len() > 1 then
+                local data = JSON:decode(response)
+                local lua_code = data.lua_code
+                local variables = data.variables
                 -- thanks for this, trampi
                 local mission_string =
                 [[
-                    local ok, err = pcall(a_do_script(
+                    result = a_do_script(
                             [=[
                             ]]
-                            .. response ..
+
+                            .. data.lua_code ..
+
                             [[
                             ]=]
-                    ))
-                    if not ok then
-                        log.write("DCS Code Injector", log.ERROR, err)
-                    end
+                    )
+                    return result
                 ]]
 
-                net.dostring_in('mission', mission_string)
+                local return_value = net.dostring_in('mission', mission_string)
+                --log.write("-------------------------->>>", log.INFO, return_value)
             else
                 if err == "closed" then
                     DCSCI.closed = true
