@@ -1,3 +1,6 @@
+## 1.2.1
+* Added versioner that makes a back up of the settings file on startup. Back ups are saved in a .local_history folder next to the settings file
+
 ## 1.2.0
 * Updated settings file, old settings should be converted to new settings on first startup. Your old settings are saved in an `__OLD` file in your Documents/dcs_code_injector folder.
 * Added support for picking log highlighting colors
