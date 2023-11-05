@@ -1,3 +1,7 @@
+## 1.2.3
+* Added line numbers to the code views
+* Refactoring of classes and modules
+
 ## 1.2.1
 * Added versioner that makes a back up of the settings file on startup. Back ups are saved in a .local_history folder next to the settings file
 
