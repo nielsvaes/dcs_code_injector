@@ -33,9 +33,9 @@ Some things other people have been using it for:
 ## 💾 How to download
 You can grab a .zip file that contains an executable that should run on any Windows machine from the releases page here: https://github.com/nielsvaes/dcs_code_injector/releases
 
-If you have Python installed on your computer, you can also find it on `PyPi` and `pip` install it with the following command:
+If you have Python installed on your computer, you can also find it on `PyPi` and `pip` install (and upgrade) it with the following command:
 
-`pip install dcs-code-injector`
+`pip install --upgrade dcs-code-injector`
 
 It also makes an entry point to the application, so type `dcs-code-injector` to run it.
 
