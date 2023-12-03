@@ -31,6 +31,7 @@ class SettingConstants:
     """
     log_highlight_rules = "log_highlight_rules"
     log_file = "log_file"
+    play_sound_on_mission_scripting_error = "play_sound_on_mission_scripting_error"
     shift_hours = "shift_hours"
     code_font_size = "code_font_size"
     log_font_size = "log_font_size"

@@ -1,3 +1,7 @@
+## 1.2.4
+* Added optional error sound when there are mission scripting errors
+* Check to see if port for server is available on startup
+
 ## 1.2.3
 * Added line numbers to the code views
 * Refactoring of classes and modules

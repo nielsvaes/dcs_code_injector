@@ -52,6 +52,7 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         """
 
         self.txt_log_file.setText(EZSettings().get(sk.log_file, ""))
+        self.chk_play_sound_on_mission_scripting_errors.setChecked(EZSettings().get(sk.play_sound_on_mission_scripting_error, True))
         self.spin_offset_time.setValue(EZSettings().get(sk.shift_hours, 0))
         hl_rules = EZSettings().get(sk.log_highlight_rules, {})
         if len(hl_rules):
@@ -65,6 +66,7 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         """
 
         EZSettings().set(sk.log_file, self.txt_log_file.text())
+        EZSettings().set(sk.play_sound_on_mission_scripting_error, self.chk_play_sound_on_mission_scripting_errors.isChecked())
         EZSettings().set(sk.shift_hours, self.spin_offset_time.value())
         EZSettings().set(sk.log_highlight_rules, self.tree_hilite_rules.get_data())
         self.close()

@@ -24,12 +24,22 @@ from . import versioner
 
 ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
+WINSOUND_OK = False
+try:
+    import winsound
+    WINSOUND_OK = True
+except:
+    WINSOUND_OK = False
+
+
+
 class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         """
         Constructor for the CodeInjectorWindow class.
         Initializes the UI and sets up the necessary connections.
         """
+        self.init_done = False
 
         super().__init__()
         self.setupUi(self)
@@ -65,6 +75,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.server.connected.connect(self.on_connected)
         self.server.received.connect(self.on_received)
         self.server.disconnected.connect(self.on_disconnected)
+        self.server.port_bind_error.connect(self.server_port_bind_error)
         self.server_thread.start()
 
         self.timer = QTimer()
@@ -81,6 +92,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.back_up_settings_file()
 
         self.show()
+        self.init_done = True
 
     def read_log(self):
         """
@@ -96,8 +108,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         if file_size > self.last_log_file_size:
             with open(self.log_file, "r", encoding="utf-8") as read_file:
                 original_lines = read_file.readlines()
-            lines = []
 
+            lines = []
             for line in original_lines:
                 try:
                     line = line.replace("                    ", "   ")
@@ -114,10 +126,25 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             diff = len(lines) - len(self.previous)
             if diff > 0:
                 if diff == len(lines):
-                    new_text = "".join(lines)
+                    new_lines = lines
                 else:
                     new_lines = lines[-diff:]
-                    new_text = "".join(new_lines)
+
+                for line in new_lines:
+                    line = line.replace("                    ", "   ")
+                    time_str = line[0:22]
+                    print("new time str", time_str)
+                    time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
+
+                    diff = datetime.now() - time
+                    print(diff)
+                    if ("mission script error" in line.lower() and
+                            diff.total_seconds() > 0.7 and
+                            self.init_done and
+                            EZSettings().get(sk.play_sound_on_mission_scripting_error, True)):
+                        self.play_error_sound()
+
+                new_text = "".join(new_lines)
                 self.add_text_to_log(new_text)
             self.previous = lines
         self.last_log_file_size = file_size
@@ -332,6 +359,22 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.add_code_to_log(code)
         self.server.response = code
+
+    @staticmethod
+    def play_error_sound():
+        """
+        Plays an error sound
+        """
+        winsound.PlaySound("SystemExit", winsound.SND_ALIAS | winsound.SND_ASYNC)
+
+
+    def server_port_bind_error(self):
+        """
+        Is triggered if the server can't bind itself to the port
+        """
+        self.play_error_sound()
+        QMessageBox.critical(self, "DCS Code Injector",
+                             f"Can't bind the server on its default port (40322). Is there another instance of DCS Code Injector Running?")
 
     @staticmethod
     def copy_hook_file():

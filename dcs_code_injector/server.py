@@ -5,6 +5,7 @@ class Server(QObject):
     connected = Signal()
     received = Signal(object)
     disconnected = Signal()
+    port_bind_error = Signal()
 
     def __init__(self):
         """
@@ -21,7 +22,10 @@ class Server(QObject):
         # Create a socket object
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Bind the socket to a specific address and port
-        server_socket.bind(('localhost', 40322))
+        try:
+            server_socket.bind(('localhost', 40322))
+        except OSError as err:
+            self.port_bind_error.emit()
         # Set the socket to listen mode with a backlog of 1 connection
         server_socket.listen(1)
 
