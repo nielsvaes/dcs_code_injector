@@ -1,5 +1,6 @@
 package.path = package.path .. ";.\\LuaSocket\\?.lua"
 package.cpath = package.cpath .. ";.\\LuaSocket\\?.dll"
+socket = require("socket")
 
 DCSCI = {}
 DCSCI.host = "localhost"

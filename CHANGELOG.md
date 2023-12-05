@@ -1,3 +1,7 @@
+## 1.2.5
+* Bugfix for not showing entire error messages
+* Fix for Lua hook sometimes not working
+
 ## 1.2.4
 * Added optional error sound when there are mission scripting errors
 * Check to see if port for server is available on startup

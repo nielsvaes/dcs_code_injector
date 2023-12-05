@@ -10,6 +10,7 @@ import pathlib
 from functools import partial
 from ez_settings import EZSettings
 from datetime import datetime, timedelta
+from pygtail import Pygtail
 
 from .settings_dialog import SettingsDialog
 from .server import Server
@@ -17,6 +18,7 @@ from .code_editor import CodeTextEdit
 from .favorites import FavoritesWidget
 from .log_view import LogView
 from .log_highlighter import LogHighlighter
+from .watcher import LogFileHandler
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 
 from .constants import sk
@@ -94,6 +96,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.show()
         self.init_done = True
 
+
     def read_log(self):
         """
         Reads the log file and updates the log view.
@@ -104,50 +107,30 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.show_settings()
             self.log_file = EZSettings().get(sk.log_file, "")
 
-        file_size = os.path.getsize(self.log_file)
-        if file_size > self.last_log_file_size:
-            with open(self.log_file, "r", encoding="utf-8") as read_file:
-                original_lines = read_file.readlines()
+        if not self.init_done:
+            with open(self.log_file, "r") as readfile:
+                self.add_text_to_log(readfile.read())
 
-            lines = []
-            for line in original_lines:
-                try:
-                    line = line.replace("                    ", "   ")
-                    time_str = line[0:22]
-                    time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    shift_hours = EZSettings().get(sk.shift_hours, 0)
-                    time += timedelta(hours=shift_hours)
-                    shifted_time_str = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
-                    line = line.replace(time_str, shifted_time_str)
-                    lines.append(line)
-                except:
-                    pass
+        for line in Pygtail(self.log_file):
+            try:
+                line = line.replace("                    ", "   ")
+                time_str = line[0:22]
+                time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
+                shift_hours = EZSettings().get(sk.shift_hours, 0)
+                time += timedelta(hours=shift_hours)
+                shifted_time_str = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
+                line = line.replace(time_str, shifted_time_str)
 
-            diff = len(lines) - len(self.previous)
-            if diff > 0:
-                if diff == len(lines):
-                    new_lines = lines
-                else:
-                    new_lines = lines[-diff:]
+                diff = datetime.now() - time
+                if ("mission script error" in line.lower() and
+                        diff.total_seconds() > 0.7 and
+                        self.init_done and
+                        EZSettings().get(sk.play_sound_on_mission_scripting_error, True)):
+                    self.play_error_sound()
 
-                for line in new_lines:
-                    line = line.replace("                    ", "   ")
-                    time_str = line[0:22]
-                    print("new time str", time_str)
-                    time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
-
-                    diff = datetime.now() - time
-                    print(diff)
-                    if ("mission script error" in line.lower() and
-                            diff.total_seconds() > 0.7 and
-                            self.init_done and
-                            EZSettings().get(sk.play_sound_on_mission_scripting_error, True)):
-                        self.play_error_sound()
-
-                new_text = "".join(new_lines)
-                self.add_text_to_log(new_text)
-            self.previous = lines
-        self.last_log_file_size = file_size
+                self.add_text_to_log(line)
+            except ValueError as err:
+                self.add_text_to_log(line)
 
     def connect_ui_signals(self):
         """
