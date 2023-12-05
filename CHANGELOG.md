@@ -1,4 +1,8 @@
 ## 1.2.5
+* Removed leftover import
+
+
+## 1.2.5
 * Bugfix for not showing entire error messages
 * Fix for Lua hook sometimes not working
 

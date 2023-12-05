@@ -18,7 +18,6 @@ from .code_editor import CodeTextEdit
 from .favorites import FavoritesWidget
 from .log_view import LogView
 from .log_highlighter import LogHighlighter
-from .watcher import LogFileHandler
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 
 from .constants import sk
