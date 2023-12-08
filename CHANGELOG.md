@@ -1,3 +1,7 @@
+
+## 1.2.7
+* Added pygtail to requirements
+
 ## 1.2.6
 * Removed leftover import
 
