@@ -4,3 +4,4 @@ ez_settings
 ez_utils
 PySide6
 qt_material
+pygtail
