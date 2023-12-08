@@ -7,7 +7,7 @@ data_files_to_include = ["*.png", "*.jpg", "*.xml"]
 
 setup(
     name='dcs-code-injector',
-    version='1.2.6',
+    version='1.2.7',
     packages=find_packages(),
     package_data={
         "": data_files_to_include,
@@ -15,7 +15,7 @@ setup(
     url='https://www.github.com/nielsvaes/dcs_code_injector',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["ez-icons", "PySide6", "ez_qt", "ez_settings", "ez_utils", "qt_material"],
+    install_requires=["ez-icons", "PySide6", "ez_qt", "ez_settings", "ez_utils", "qt_material", "pygtail" ],
     license='GNU v3',
     author='Niels Vaes',
     author_email='nielsvaes@gmail.com',
