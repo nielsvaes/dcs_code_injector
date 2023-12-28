@@ -18,7 +18,11 @@ local function reinit_client()
     DCSCI.client = socket.tcp()
     DCSCI.client:settimeout(0.0001)
     local success, err = DCSCI.client:connect(DCSCI.host, DCSCI.port)
+    if err ~= nil then
+        log.write("DCS Code Injector reinit_client -->", log.ERROR, tostring(err))
+    end
     if success ~= nil then
+        log.write("DCS Code Injector reinit_client -->", log.ERROR, "Can't connect to localhost " .. tostring(DCSCI.host .. " - " .. tostring(DCSCI.port)))
         DCSCI.closed = false
     end
 end
@@ -44,7 +48,10 @@ local function init()
             end
 
             -- poke the server, let it know we want some data
-            local total_bytes_sent, err, index_last_byte_sent = DCSCI.client:send('{"connection": "active"}')
+            local total_bytes_sent, err, index_last_byte_sent = DCSCI.client:send('ac')
+            if err ~= nil then
+                log.write("DCS Code Injector onSimulationFrame -->", log.ERROR, tostring(err))
+            end
             if total_bytes_sent == nil then --
                 if err == "closed" or err == "timeout" or err == "Socket is not connected" then
                     DCSCI.closed = true
