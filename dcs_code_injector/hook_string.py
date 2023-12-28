@@ -3,27 +3,13 @@ package.path = package.path .. ";.\\LuaSocket\\?.lua"
 package.cpath = package.cpath .. ";.\\LuaSocket\\?.dll"
 socket = require("socket")
 
-
 DCSCI = {}
-DCSCI.host = "localhost"
-DCSCI.port = 40322
-DCSCI.time = 0
-DCSCI.closed = true
-DCSCI.wait = 0.25
+DCSCI.host = "*"
+DCSCI.port = 45221
 DCSCI.mission_load_complete = false
 
-
-local function reinit_client()
-    if DCSCI.client ~= nil then
-        DCSCI.client:close()
-    end
-    DCSCI.client = socket.tcp()
-    DCSCI.client:settimeout(0.0001)
-    local success, err = DCSCI.client:connect(DCSCI.host, DCSCI.port)
-    if success ~= nil then
-        DCSCI.closed = false
-    end
-end
+DCSCI.server = socket.bind(DCSCI.host, DCSCI.port)
+DCSCI.server:settimeout(0)
 
 local function init()
     log.write("DCS Code Injector", log.INFO, "Starting...")
@@ -39,24 +25,15 @@ local function init()
         if not DCSCI.mission_load_complete then
             return
         end
+        local code_injector_client = DCSCI.server:accept()
 
-        if DCSCI.time + DCSCI.wait  < DCS.getModelTime() then
-            if DCSCI.closed then
-                reinit_client()
-            end
+        if code_injector_client then
+            code_injector_client:settimeout(0)
 
-            -- poke the server, let it know we want some data
-            local total_bytes_sent, err, index_last_byte_sent = DCSCI.client:send('{"connection": "active"}')
-            if total_bytes_sent == nil then --
-                if err == "closed" or err == "timeout" or err == "Socket is not connected" then
-                    DCSCI.closed = true
-                end
-            end
-
-            local response = ""
             local chunk, err, partial
+            local response = ""
             repeat
-                chunk, err, partial = DCSCI.client:receive()
+                chunk, err, partial = code_injector_client:receive()
                 response = response .. (chunk or partial) .. "\n"
             until err or chunk == nil
 
@@ -77,21 +54,14 @@ local function init()
                 ]]
 
                 net.dostring_in('mission', mission_string)
-            else
-                if err == "closed" then
-                    DCSCI.closed = true
-                end
             end
-
-            DCSCI.dcsci_time = DCS.getModelTime()
+        else
+            return
         end
     end
 
     function handler.onSimulationStop()
         log.write("DCS Code Injector", log.INFO, "Simulation stopped, closing connection")
-        DCSCI.client:send('{"connection": "not_active"}')
-        DCSCI.client:close()
-        DCSCI.closed = true
     end
 
     DCS.setUserCallbacks(handler)
@@ -102,6 +72,4 @@ local ok, err = pcall(init)
 if not ok then
     log.write("DCS Code Injector", log.ERROR, "Error loading Code Injector: " .. tostring(err))
 end
-
-
 """

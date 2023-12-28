@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt
 import os
 import json
 import pathlib
+import socket
 
 from functools import partial
 from ez_settings import EZSettings
@@ -13,7 +14,7 @@ from datetime import datetime, timedelta
 from pygtail import Pygtail
 
 from .settings_dialog import SettingsDialog
-from .server import Server
+from .send_animation import AnimatedLines
 from .code_editor import CodeTextEdit
 from .favorites import FavoritesWidget
 from .log_view import LogView
@@ -69,28 +70,23 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.tab_widget.widget(i).font_size = EZSettings().get(sk.code_font_size, 10)
             self.tab_widget.widget(i).update_document_size()
 
-        self.server = Server()
-        self.server_thread = QThread()
-        self.server.moveToThread(self.server_thread)
-        self.server_thread.started.connect(self.server.start)
-        self.server.connected.connect(self.on_connected)
-        self.server.received.connect(self.on_received)
-        self.server.disconnected.connect(self.on_disconnected)
-        self.server.port_bind_error.connect(self.server_port_bind_error)
-        self.server_thread.start()
-
         self.timer = QTimer()
         self.timer.setInterval(500)
         self.timer.timeout.connect(self.read_log)
         self.timer.start()
 
-        QCoreApplication.instance().aboutToQuit.connect(self.stop_server)
-
         self.connection_label = QLabel()
-        self.statusbar.addWidget(self.connection_label)
-        self.on_disconnected()
+        # self.statusBar.addWidget(self.connection_label)
 
         self.back_up_settings_file()
+
+        # self.statusBar = QStatusBar()
+        # self.setStatusBar(self.statusBar)
+        #
+        # self.animatedLines = AnimatedLines(self.statusBar)
+        # self.statusBar.addPermanentWidget(self.animatedLines)
+        # self.animation = QPropertyAnimation(self.animatedLines, b"position")
+        # self.animation.setDuration(50000)
 
         self.show()
         self.init_done = True
@@ -178,38 +174,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.txt_log.setStyleSheet(f"font: {size}pt 'Courier New';")
             EZSettings().set(sk.log_font_size, size)
 
-    def on_connected(self):
-        """
-        Called when the server is connected.
-        Updates the connection status in the UI.
-        """
-
-        pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_done.png"))
-        pixmap = pixmap.scaledToWidth(20, Qt.SmoothTransformation)
-        self.connection_label.setPixmap(pixmap)
-        self.statusbar.showMessage("Connected to DCS", 2500)
-
-    def on_disconnected(self):
-        """
-        Called when the server is disconnected.
-        Updates the connection status in the UI.
-        """
-
-        pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "ui", "icons", "cloud_off.png"))
-        pixmap = pixmap.scaledToWidth(20, Qt.SmoothTransformation)
-        self.connection_label.setPixmap(pixmap)
-        self.statusbar.showMessage("Disconnected from DCS", 2500)
-
-    def stop_server(self):
-        """
-        Stops the server and waits for the server thread to finish.
-        """
-
-        print("killing server")
-        self.server.exit = True
-        self.server_thread.quit()
-        self.server_thread.wait()
-
     def clear_log(self):
         """
         "Clears" the log view by just adding 60 newlines to push everything up
@@ -224,7 +188,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         :param favorite_button: <FavoritesButton> the favorite button to connect
         """
 
-        favorite_button.clicked.connect(partial(self.set_server_response, favorite_button.code))
+        favorite_button.clicked.connect(partial(self.send_code, favorite_button.code))
         favorite_button.open_tab_with_code.connect(partial(self.add_new_tab))
 
     def close_tab(self, tab_index):
@@ -331,16 +295,26 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.txt_log.insertPlainText(complete_text)
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
-    def set_server_response(self, code):
+    def send_code(self, code):
         """
-        Sets the server response and adds the code to the log. The server response is what's being sent back
-        to DCS.
+        Sends code to DCS
 
         :param code: <str> the code to be set as the server response
         """
 
         self.add_code_to_log(code)
-        self.server.response = code
+        s = socket.socket()
+        s.connect(('localhost', 45221))
+        try:
+            s.sendall(code.encode())
+            # self.statusBar.showMessage("Data sent successfully", 5000)
+        except Exception as err:
+            self.add_code_to_log(f"ERROR: {err}")
+
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(self.statusBar.width())
+        print(f"Start value: 0, End value: {self.statusBar.width()}")
+        self.animation.start()
 
     @staticmethod
     def play_error_sound():
@@ -348,15 +322,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         Plays an error sound
         """
         winsound.PlaySound("SystemExit", winsound.SND_ALIAS | winsound.SND_ASYNC)
-
-
-    def server_port_bind_error(self):
-        """
-        Is triggered if the server can't bind itself to the port
-        """
-        self.play_error_sound()
-        QMessageBox.critical(self, "DCS Code Injector",
-                             f"Can't bind the server on its default port (40322). Is there another instance of DCS Code Injector Running?")
 
     @staticmethod
     def copy_hook_file():
@@ -417,7 +382,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             text = self.tab_widget.currentWidget().textCursor().selection().toPlainText()
             if text == "":
                 text = self.tab_widget.currentWidget().toPlainText()
-            self.set_server_response(text)
+            self.send_code(text)
 
     def closeEvent(self, event):
         """
