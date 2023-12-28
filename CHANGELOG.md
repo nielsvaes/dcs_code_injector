@@ -1,3 +1,6 @@
+## 1.3.0
+* Flipped the connection: DCS is now the server and the Code Injector is the client. This help gain back just about all lost frames from the hook code. 
+* Added a version dialog
 
 ## 1.2.7
 * Added pygtail to requirements
