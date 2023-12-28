@@ -8,6 +8,7 @@ import shutil
 from ez_settings import EZSettings
 from qt_material import apply_stylesheet
 
+from . import ICON
 from .dcs_code_injector_window import CodeInjectorWindow
 from .constants import sk, DEFAULT_HIGHLIGHTING_RULES
 
@@ -66,6 +67,7 @@ def main():
     splash = QSplashScreen(QPixmap(splashscreens[random.randint(0, len(splashscreens) - 1)]))
     splash.show()
 
+    application.setWindowIcon(QIcon(ICON))
     application.processEvents()
     apply_stylesheet(application, "dark_teal.xml")
     win = CodeInjectorWindow()

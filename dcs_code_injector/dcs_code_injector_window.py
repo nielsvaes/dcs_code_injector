@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from pygtail import Pygtail
 
 from .settings_dialog import SettingsDialog
-from .send_animation import AnimatedLines
+from .version_dialog import AboutDialog
 from .code_editor import CodeTextEdit
 from .favorites import FavoritesWidget
 from .log_view import LogView
@@ -23,8 +23,6 @@ from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 
 from .constants import sk
 from . import versioner
-
-ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
 
 WINSOUND_OK = False
 try:
@@ -45,13 +43,14 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         super().__init__()
         self.setupUi(self)
-        self.setWindowIcon(QIcon(ICON))
         self.resize(EZSettings().get(sk.main_win_width, 1280), EZSettings().get(sk.main_win_height, 800))
         self.move(EZSettings().get(sk.main_win_pos_x, 0), EZSettings().get(sk.main_win_pos_y, 0))
         self.setWindowTitle("DCS Code Injector")
 
         self.favorites_widget = FavoritesWidget()
         self.favorites_layout.addWidget(self.favorites_widget)
+
+        self.about_dialog = AboutDialog()
 
         self.last_log_file_size = 0
 
@@ -75,18 +74,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.read_log)
         self.timer.start()
 
-        self.connection_label = QLabel()
-        # self.statusBar.addWidget(self.connection_label)
-
         self.back_up_settings_file()
-
-        # self.statusBar = QStatusBar()
-        # self.setStatusBar(self.statusBar)
-        #
-        # self.animatedLines = AnimatedLines(self.statusBar)
-        # self.statusBar.addPermanentWidget(self.animatedLines)
-        # self.animation = QPropertyAnimation(self.animatedLines, b"position")
-        # self.animation.setDuration(50000)
 
         self.show()
         self.init_done = True
@@ -144,6 +132,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_decrease_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), False))
         self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
         self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
+        self.action_about.triggered.connect(lambda: self.about_dialog.exec_())
 
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
 

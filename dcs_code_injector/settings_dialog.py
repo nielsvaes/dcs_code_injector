@@ -8,8 +8,6 @@ import os
 from .ui.dcs_code_injector_settings_ui import Ui_settings_dialog
 from .constants import DEFAULT_HIGHLIGHTING_RULES, sk
 
-ICON = os.path.join(os.path.dirname(__file__), "ui", "icons", "icon.png")
-
 
 class SettingsDialog(QDialog, Ui_settings_dialog):
     def __init__(self):
@@ -19,7 +17,6 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 
         super().__init__()
         self.setupUi(self)
-        self.setWindowIcon(QIcon(ICON))
 
         self.tree_hilite_rules = LogHighlightingRulesTree()
         self.log_highlighting_rules_layout.insertWidget(0, self.tree_hilite_rules)
