@@ -47,6 +47,8 @@ class Ui_MainWindow(object):
         self.action_decrease_code_font_size.setObjectName(u"action_decrease_code_font_size")
         self.action_back_up_settings_file = QAction(MainWindow)
         self.action_back_up_settings_file.setObjectName(u"action_back_up_settings_file")
+        self.action_about = QAction(MainWindow)
+        self.action_about.setObjectName(u"action_about")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
@@ -83,6 +85,8 @@ class Ui_MainWindow(object):
         self.menuTools.setObjectName(u"menuTools")
         self.menuView = QMenu(self.menubar)
         self.menuView.setObjectName(u"menuView")
+        self.menuHelp = QMenu(self.menubar)
+        self.menuHelp.setObjectName(u"menuHelp")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -91,6 +95,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.action_settings)
         self.menuFile.addAction(self.action_back_up_settings_file)
         self.menuTools.addAction(self.action_add_new_tab)
@@ -104,6 +109,7 @@ class Ui_MainWindow(object):
         self.menuView.addSeparator()
         self.menuView.addAction(self.action_increase_code_font_size)
         self.menuView.addAction(self.action_decrease_code_font_size)
+        self.menuHelp.addAction(self.action_about)
 
         self.retranslateUi(MainWindow)
 
@@ -150,8 +156,10 @@ class Ui_MainWindow(object):
         self.action_decrease_code_font_size.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+-", None))
 #endif // QT_CONFIG(shortcut)
         self.action_back_up_settings_file.setText(QCoreApplication.translate("MainWindow", u"Back up settings file", None))
+        self.action_about.setText(QCoreApplication.translate("MainWindow", u"About...", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"Tools", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
     # retranslateUi
 

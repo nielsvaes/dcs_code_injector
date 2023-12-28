@@ -78,9 +78,16 @@
     <addaction name="action_increase_code_font_size"/>
     <addaction name="action_decrease_code_font_size"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_about"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_settings">
@@ -160,6 +167,11 @@
   <action name="action_back_up_settings_file">
    <property name="text">
     <string>Back up settings file</string>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>About...</string>
    </property>
   </action>
  </widget>
