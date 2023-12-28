@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from dcs_code_injector import VERSION
 
 with open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -7,7 +8,7 @@ data_files_to_include = ["*.png", "*.jpg", "*.xml"]
 
 setup(
     name='dcs-code-injector',
-    version='1.2.7',
+    version=VERSION,
     packages=find_packages(),
     package_data={
         "": data_files_to_include,
