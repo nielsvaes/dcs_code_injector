@@ -266,14 +266,34 @@ class CodeTextEdit(QPlainTextEdit):
             self.__insert_code("BASE:I()", -1)
         if event.key() == Qt.Key_M and event.modifiers() == Qt.ControlModifier:
             self.__insert_code("MessageToAll()", -1)
+        if event.key() in [
+            Qt.Key.Key_QuoteDbl,
+            Qt.Key.Key_Apostrophe,
+            Qt.Key.Key_BraceLeft,
+            Qt.Key.Key_BraceRight,
+            Qt.Key.Key_BracketLeft,
+            Qt.Key.Key_BracketRight,
+            Qt.Key.Key_ParenLeft,
+            Qt.Key.Key_ParenRight,
+        ]:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.KeepAnchor)
+            if cursor.selectedText() == event.text():
+                cursor.movePosition(QTextCursor.MoveOperation.Right)
+                self.setTextCursor(cursor)
+                return
+
         if event.key() == Qt.Key_QuoteDbl:
             self.__insert_code('"', -1)
+        if event.key() == Qt.Key_Apostrophe:
+            self.__insert_code("'", -1)
         if event.key() == Qt.Key_BraceLeft:
             self.__insert_code("}", -1)
         if event.key() == Qt.Key_BracketLeft:
             self.__insert_code("]", -1)
         if event.key() == Qt.Key_ParenLeft:
             self.__insert_code(")", -1)
+
 
         self.update_keywords()
 
