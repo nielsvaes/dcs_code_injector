@@ -32,22 +32,32 @@ class CodeTextEdit(QPlainTextEdit):
 
         SimpleLuaHighlighter(self.document())
 
-        keywords = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']
+        # keywords = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']
 
-        # d = {
-        #     "GROUP": ["New()", "Find()"],
-        #     "SPAWN": ["FromVec2()", "Init()"],
-        #     "g": [],
-        # }
+        d = {
+            "GROUP": ["New()", "Find()"],
+            "SPAWN": ["FromVec2()", "Init()"],
+            "g": [],
+        }
 
-        completer = QCompleter(keywords)
+        self.previous_keywords = d.keys()
+
+        completer = QCompleter(self.previous_keywords)
         completer.activated.connect(self.insert_completion)
         completer.setWidget(self)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer = completer
         self.completer.popup().setItemDelegate(PopupItemDelegate())
+        self.completer.popup().setStyleSheet("""
+                                                QListView::item {
+                                                    min-height: 18px;
+                                                    max-height: 18px;
+                                                    font: 'Courier New'
+                                                },
+                                            """)
         self.textChanged.connect(self.complete)
+        self.textChanged.connect(self.update_keywords)
 
     def insert_completion(self, completion):
         """
@@ -111,18 +121,17 @@ class CodeTextEdit(QPlainTextEdit):
             return
         self.completer.setCompletionPrefix(prefix)
         popup = self.completer.popup()
-        cr: QRect = self.cursorRect()
-        cr.setX(cr.x() + 50)
-
-        self.completer.complete(cr)
+        rect: QRect = self.cursorRect()
+        rect.setX(rect.x() + 55)
+        self.completer.complete(rect)
 
         popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
         if len(prefix) > 1:
-            cr.setWidth(
+            rect.setWidth(
                 self.completer.popup().sizeHintForColumn(0)
                 + self.completer.popup().verticalScrollBar().sizeHint().width()
             )
-            self.completer.complete(cr)
+            self.completer.complete(rect)
         else:
             self.completer.popup().hide()
 
@@ -251,7 +260,7 @@ class CodeTextEdit(QPlainTextEdit):
         matches = re.findall(r'\b([a-zA-Z_][a-zA-Z_0-9]*)\s*=', text)
         for variable_name in matches:
             if variable_name not in self.completer.model().stringList():
-                self.completer.model().setStringList(self.completer.model().stringList() + [variable_name])
+                self.completer.model().setStringList(list(set(self.completer.model().stringList() + [variable_name])))
 
 
     def __insert_code(self, text, move_back_pos):
@@ -347,8 +356,8 @@ class CodeTextEdit(QPlainTextEdit):
     def resizeEvent(self, event):
         super().resizeEvent(event)
 
-        cr = self.contentsRect()
-        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.get_line_number_area_width(), cr.height()))
+        content_rect = self.contentsRect()
+        self.line_number_area.setGeometry(QRect(content_rect.left(), content_rect.top(), self.get_line_number_area_width(), content_rect.height()))
 
 
 class LineNumberArea(QWidget):
@@ -373,6 +382,12 @@ class PopupItemDelegate(QStyledItemDelegate):
     """
     A custom QStyledItemDelegate that provides custom size hint for QCompleter popup items.
     """
+    def paint(self, painter, option, index):
+        font = QFont("Courier New")
+        font.setPointSize(10)
+        option.font = font
+
+        super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
         """
@@ -386,5 +401,5 @@ class PopupItemDelegate(QStyledItemDelegate):
         QSize: The size hint for the item.
         """
 
-        baseSize = super().sizeHint(option, index)
-        return QSize(baseSize.width() * 2, baseSize.height())
+        base_size = super().sizeHint(option, index)
+        return QSize(base_size.width() * 2, base_size.height())
