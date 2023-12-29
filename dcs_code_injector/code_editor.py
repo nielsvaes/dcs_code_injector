@@ -1,8 +1,12 @@
-from .lua_syntax_highlighter import SimpleLuaHighlighter
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 from PySide6.QtCore import Qt
+
+import re
+
+from .lua_syntax_highlighter import SimpleLuaHighlighter
+
 
 class CodeTextEdit(QPlainTextEdit):
     def __init__(self):
@@ -27,6 +31,55 @@ class CodeTextEdit(QPlainTextEdit):
         self.update_line_number_area_width()
 
         SimpleLuaHighlighter(self.document())
+
+        keywords = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']
+
+        completer = QCompleter(keywords)
+        completer.activated.connect(self.insert_completion)
+        completer.setWidget(self)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.completer = completer
+        self.completer.popup().setItemDelegate(PopupItemDelegate())
+        self.textChanged.connect(self.complete)
+
+    def insert_completion(self, completion):
+        tc = self.textCursor()
+        tc.select(QTextCursor.WordUnderCursor)
+        if self.text_under_cursor == completion:
+            return
+        extra = len(completion) - len(self.completer.completionPrefix())
+        tc.movePosition(QTextCursor.MoveOperation.Left)
+        tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
+        tc.insertText(completion[-extra:])
+        self.setTextCursor(tc)
+
+    @property
+    def text_under_cursor(self):
+        tc = self.textCursor()
+        tc.select(QTextCursor.SelectionType.WordUnderCursor)
+        return tc.selectedText()
+
+    def complete(self):
+        prefix = self.text_under_cursor
+        if prefix in self.completer.model().stringList():
+            return
+        self.completer.setCompletionPrefix(prefix)
+        popup = self.completer.popup()
+        cr: QRect = self.cursorRect()
+        cr.setX(cr.x() + 50)
+
+        self.completer.complete(cr)
+
+        popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
+        if len(prefix) > 1:
+            cr.setWidth(
+                self.completer.popup().sizeHintForColumn(0)
+                + self.completer.popup().verticalScrollBar().sizeHint().width()
+            )
+            self.completer.complete(cr)
+        else:
+            self.completer.popup().hide()
 
     def get_line_number_area_width(self):
         """
@@ -148,6 +201,14 @@ class CodeTextEdit(QPlainTextEdit):
 
         return self.textCursor().selectedText()
 
+    def update_keywords(self):
+        text = self.toPlainText()
+        matches = re.findall(r'\b([a-zA-Z_][a-zA-Z_0-9]*)\s*=', text)
+        for variable_name in matches:
+            if variable_name not in self.completer.model().stringList():
+                self.completer.model().setStringList(self.completer.model().stringList() + [variable_name])
+
+
     def __insert_code(self, text, move_back_pos):
         """
         Inserts the given text at the current cursor position.
@@ -170,6 +231,17 @@ class CodeTextEdit(QPlainTextEdit):
 
         :param event: <QKeyEvent> the key press event
         """
+        if self.completer.popup().isVisible() and event.key() in [
+            Qt.Key.Key_Enter,
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Up,
+            Qt.Key.Key_Down,
+            Qt.Key.Key_Tab,
+            Qt.Key.Key_Backtab,
+        ]:
+            self.completer.popup().close()
+            event.ignore()
+            return
 
         if event.key() == Qt.Key_Slash and event.modifiers() == Qt.ControlModifier:
             cursor = self.textCursor()
@@ -203,6 +275,8 @@ class CodeTextEdit(QPlainTextEdit):
         if event.key() == Qt.Key_ParenLeft:
             self.__insert_code(")", -1)
 
+        self.update_keywords()
+
         super().keyPressEvent(event)
 
     def resizeEvent(self, event):
@@ -219,3 +293,9 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.codeEditor.line_number_area_paint_event(event)
+
+
+class PopupItemDelegate(QStyledItemDelegate):
+    def sizeHint(self, option, index):
+        baseSize = super().sizeHint(option, index)
+        return QSize(baseSize.width() * 2, baseSize.height())
