@@ -256,20 +256,21 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         if code != "" and not tab_name == "UNNAMED":
             EZSettings().set(f"code__{tab_name}", code)
 
-    def add_code_to_log(self, text):
+    def add_code_to_log(self, text, header_text="CODE BLOCK"):
         """
         Adds the given as a code block to the log view.
 
         :param text: <str> the text to be added to the log
+        :param header_text: <str> text for the header that wraps the code
         """
 
         line_number = 1
-        numbered_lines = ["\n------------------- CODE BLOCK -------------------"]
+        numbered_lines = [f"\n------------------- {header_text} -------------------"]
         for line in text.split("\n"):
             line = f"{str(line_number).zfill(2)}          {line}"
             numbered_lines.append(line)
             line_number += 1
-        numbered_lines.append("\n------------------ /CODE BLOCK -------------------\n")
+        numbered_lines.append(f"\n------------------ /{header_text} -------------------\n")
         complete_text = "\n".join(numbered_lines)
         self.add_text_to_log(complete_text)
 
@@ -293,17 +294,13 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.add_code_to_log(code)
         s = socket.socket()
-        s.connect(('localhost', 45221))
+        s.settimeout(0.5)
         try:
+            s.connect(('localhost', 45221))
             s.sendall(code.encode())
-            # self.statusBar.showMessage("Data sent successfully", 5000)
-        except Exception as err:
-            self.add_code_to_log(f"ERROR: {err}")
-
-        self.animation.setStartValue(0)
-        self.animation.setEndValue(self.statusBar.width())
-        print(f"Start value: 0, End value: {self.statusBar.width()}")
-        self.animation.start()
+            self.statusbar.showMessage("Data sent successfully", 5000)
+        except ConnectionRefusedError as err:
+            self.add_code_to_log(f"ERROR: {err}\nIs DCS running?", "CODE INJECTOR ERROR")
 
     @staticmethod
     def play_error_sound():
