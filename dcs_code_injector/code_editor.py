@@ -34,6 +34,12 @@ class CodeTextEdit(QPlainTextEdit):
 
         keywords = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']
 
+        # d = {
+        #     "GROUP": ["New()", "Find()"],
+        #     "SPAWN": ["FromVec2()", "Init()"],
+        #     "g": [],
+        # }
+
         completer = QCompleter(keywords)
         completer.activated.connect(self.insert_completion)
         completer.setWidget(self)
@@ -44,23 +50,62 @@ class CodeTextEdit(QPlainTextEdit):
         self.textChanged.connect(self.complete)
 
     def insert_completion(self, completion):
+        """
+        Inserts the autocompletion text into the document at the cursor's position.
+
+        Parameters:
+        completion (str): The autocompletion text to be inserted.
+        """
+
         tc = self.textCursor()
         tc.select(QTextCursor.WordUnderCursor)
         if self.text_under_cursor == completion:
             return
+
+        char_to_right = None
+        pos = self.textCursor().position()
+        text = self.toPlainText()
+        if pos < len(text):
+            char_to_right = text[pos]
+
+
+        if char_to_right in [")", "\"", "'", "]", "}"]:
+            tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
+            tc.movePosition(QTextCursor.MoveOperation.Left)
+        else:
+            tc.movePosition(QTextCursor.MoveOperation.Left)
+            tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
+
         extra = len(completion) - len(self.completer.completionPrefix())
-        tc.movePosition(QTextCursor.MoveOperation.Left)
-        tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
         tc.insertText(completion[-extra:])
         self.setTextCursor(tc)
 
     @property
     def text_under_cursor(self):
+        """
+        Returns the word under the cursor.
+
+        The cursor is moved one position to the left before selecting the word under the cursor.
+
+        Returns:
+        str: The word under the cursor.
+        """
+
         tc = self.textCursor()
-        tc.select(QTextCursor.SelectionType.WordUnderCursor)
+        tc.movePosition(QTextCursor.PreviousCharacter, QTextCursor.KeepAnchor, 1)
+        tc.select(QTextCursor.WordUnderCursor)
         return tc.selectedText()
 
     def complete(self):
+        """
+        Performs autocompletion based on the current word under the cursor.
+
+        If the word under the cursor is in the completer's list, it does nothing.
+        Otherwise, it sets the completion prefix to the word under the cursor and opens the completer's popup
+        at the current cursor's rectangle. If the completion prefix length is greater than 1, it also adjusts
+        the width of the completer's popup based on the size hint of the first column and the vertical scrollbar.
+        """
+
         prefix = self.text_under_cursor
         if prefix in self.completer.model().stringList():
             return
@@ -307,15 +352,39 @@ class CodeTextEdit(QPlainTextEdit):
 
 
 class LineNumberArea(QWidget):
+    """
+    A custom QWidget that displays line numbers for a CodeTextEdit.
+    """
     def __init__(self, editor):
         super().__init__(editor)
         self.codeEditor = editor
 
     def paintEvent(self, event):
+        """
+        Handles the paint event for the line number area. Draws line numbers and highlights the current line.
+
+        Parameters:
+        event (QPaintEvent): The paint event.
+        """
         self.codeEditor.line_number_area_paint_event(event)
 
 
 class PopupItemDelegate(QStyledItemDelegate):
+    """
+    A custom QStyledItemDelegate that provides custom size hint for QCompleter popup items.
+    """
+
     def sizeHint(self, option, index):
+        """
+        Returns the size hint for the given index and style option.
+
+        Parameters:
+        option (QStyleOptionViewItem): The style option for the item.
+        index (QModelIndex): The model index for the item.
+
+        Returns:
+        QSize: The size hint for the item.
+        """
+
         baseSize = super().sizeHint(option, index)
         return QSize(baseSize.width() * 2, baseSize.height())
