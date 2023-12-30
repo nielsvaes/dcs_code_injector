@@ -5554,13 +5554,14 @@ class CodeTextEdit(QPlainTextEdit):
         if prefix in self.completer.model().stringList():
             return
         self.completer.setCompletionPrefix(prefix)
+        self.completer.popup().hide()
         popup = self.completer.popup()
         rect: QRect = self.cursorRect()
         rect.setX(rect.x() + 55)
         self.completer.complete(rect)
 
-        popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
         if len(prefix) > 1:
+            popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
             rect.setWidth(
                 self.completer.popup().sizeHintForColumn(0)
                 + self.completer.popup().verticalScrollBar().sizeHint().width()
