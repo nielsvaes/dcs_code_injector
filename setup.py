@@ -16,7 +16,7 @@ setup(
     url='https://www.github.com/nielsvaes/dcs_code_injector',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["ez-icons", "PySide6", "ez_qt", "ez_settings", "ez_utils", "qt_material", "pygtail" ],
+    install_requires=["ez-icons", "PySide6", "ez_qt", "ez_settings", "ez_utils", "qt_material", "pygtail", "requests" ],
     license='GNU v3',
     author='Niels Vaes',
     author_email='nielsvaes@gmail.com',
