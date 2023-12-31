@@ -40,6 +40,9 @@ class SettingConstants:
     main_win_height = "main_win_height"
     main_win_pos_x = "main_win_pos_x"
     main_win_pos_y = "main_win_pos_y"
+    enable_code_completion = "enable_code_completion"
+    MOOSE_autocomplete = "MOOSE_autocomplete"
+    mist_autocomplete = "mist_autocomplete"
 
 
 sk = SettingConstants

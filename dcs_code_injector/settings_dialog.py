@@ -7,6 +7,7 @@ import os
 
 from .ui.dcs_code_injector_settings_ui import Ui_settings_dialog
 from .constants import DEFAULT_HIGHLIGHTING_RULES, sk
+from . import moose_mist_updater
 
 
 class SettingsDialog(QDialog, Ui_settings_dialog):
@@ -26,7 +27,37 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         self.btn_save.clicked.connect(self.save)
         self.btn_cancel.clicked.connect(self.close)
 
+        self.btn_update_MOOSE_data.clicked.connect(partial(self.download_code, self.txt_moose_url, sk.MOOSE_autocomplete))
+        self.btn_update_mist_data.clicked.connect(partial(self.download_code, self.txt_mist_url, sk.mist_autocomplete))
+
+        self.btn_clear_MOOSE.clicked.connect(partial(self.clear_code, sk.MOOSE_autocomplete))
+        self.btn_clear_mist.clicked.connect(partial(self.clear_code, sk.mist_autocomplete))
+
+
         self.load()
+
+    @staticmethod
+    def download_code(sending_line_edit, settings_key):
+        url = sending_line_edit.text()
+        lines = moose_mist_updater.update_from_url(url)
+
+        EZSettings().set(settings_key, lines)
+        print(lines)
+
+        # with open(downloaded_file, "r", encoding="utf-8") as readfile:
+        #     lines = readfile.readlines()
+        #     clean_lines = []
+        #     for line in lines:
+        #         line = line.strip()
+        #         if len(line):
+        #             clean_lines.append(line)
+
+
+
+    @staticmethod
+    def clear_code(settings_key):
+        EZSettings().remove(settings_key)
+
 
     def open_file_browser(self):
         """
@@ -50,6 +81,7 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 
         self.txt_log_file.setText(EZSettings().get(sk.log_file, ""))
         self.chk_play_sound_on_mission_scripting_errors.setChecked(EZSettings().get(sk.play_sound_on_mission_scripting_error, True))
+        self.chk_enable_code_completion.setChecked(EZSettings().get(sk.enable_code_completion, True))
         self.spin_offset_time.setValue(EZSettings().get(sk.shift_hours, 0))
         hl_rules = EZSettings().get(sk.log_highlight_rules, {})
         if len(hl_rules):
@@ -64,6 +96,7 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 
         EZSettings().set(sk.log_file, self.txt_log_file.text())
         EZSettings().set(sk.play_sound_on_mission_scripting_error, self.chk_play_sound_on_mission_scripting_errors.isChecked())
+        EZSettings().set(sk.enable_code_completion, self.chk_enable_code_completion.isChecked())
         EZSettings().set(sk.shift_hours, self.spin_offset_time.value())
         EZSettings().set(sk.log_highlight_rules, self.tree_hilite_rules.get_data())
         self.close()
