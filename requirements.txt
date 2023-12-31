@@ -5,3 +5,4 @@ ez_utils
 PySide6
 qt_material
 pygtail
+requests
