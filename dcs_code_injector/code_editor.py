@@ -5722,19 +5722,19 @@ class CodeTextEdit(QPlainTextEdit):
             self.handle_control_down()
         elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
             self.handle_control_p()
-        elif event.key() in [
-            Qt.Key.Key_QuoteDbl,
-            Qt.Key.Key_Apostrophe,
-            Qt.Key.Key_BraceLeft,
-            Qt.Key.Key_BraceRight,
-            Qt.Key.Key_BracketLeft,
-            Qt.Key.Key_BracketRight,
-            Qt.Key.Key_ParenLeft,
-            Qt.Key.Key_ParenRight,
-        ]:
-            self.handle_special_characters(event)
+        # elif event.key() in [
+        #     Qt.Key.Key_QuoteDbl,
+        #     Qt.Key.Key_Apostrophe,
+        #     Qt.Key.Key_BraceLeft,
+        #     Qt.Key.Key_BraceRight,
+        #     Qt.Key.Key_BracketLeft,
+        #     Qt.Key.Key_BracketRight,
+        #     Qt.Key.Key_ParenLeft,
+        #     Qt.Key.Key_ParenRight,
+        # ]:
+        #     self.handle_special_characters(event)
         elif event.key() == Qt.Key_Tab:
-            self.handle_tab(event)
+            self.handle_tab()
         elif event.key() == Qt.Key_Backtab:
             self.handle_backtab()
         else:
@@ -5787,7 +5787,7 @@ class CodeTextEdit(QPlainTextEdit):
         elif event.key() == Qt.Key_ParenLeft:
             self.__insert_code(")" * 2, -1)
 
-    def handle_tab(self, event):
+    def handle_tab(self):
         cursor = self.textCursor()
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
@@ -5797,15 +5797,20 @@ class CodeTextEdit(QPlainTextEdit):
             start, end = end, start
 
         selected_text = self.document().toPlainText()[start:end]
-        lines = selected_text.split("\n")
-        indented_lines = ['    ' + line for line in lines]  # add 4 spaces at the beginning of each line
-        cursor.setPosition(start)
-        cursor.setPosition(end, QTextCursor.KeepAnchor)
-        cursor.insertText("\n".join(indented_lines))  # replace the selected text with the indented lines
+        if selected_text.strip() == '':
+            # If the selected text is empty or contains only spaces, insert 4 spaces
+            cursor.insertText('    ')
+        else:
+            # Otherwise, indent each line
+            lines = selected_text.split("\n")
+            indented_lines = ['    ' + line for line in lines]
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            cursor.insertText("\n".join(indented_lines))
 
-        cursor.setPosition(start)
-        cursor.setPosition(start + len("\n".join(indented_lines)), QTextCursor.KeepAnchor)
-        self.setTextCursor(cursor)
+            cursor.setPosition(start)
+            cursor.setPosition(start + len("\n".join(indented_lines)), QTextCursor.KeepAnchor)
+            self.setTextCursor(cursor)
 
     def handle_backtab(self):
         cursor = self.textCursor()
@@ -5817,16 +5822,24 @@ class CodeTextEdit(QPlainTextEdit):
             start, end = end, start
 
         selected_text = self.document().toPlainText()[start:end]
-        lines = selected_text.split("\n")
-        dedented_lines = [line[4:] if line.startswith('    ') else line for line in
-                          lines]  # remove 4 spaces at the beginning of each line if they exist
-        cursor.setPosition(start)
-        cursor.setPosition(end, QTextCursor.KeepAnchor)
-        cursor.insertText("\n".join(dedented_lines))  # replace the selected text with the dedented lines
+        if selected_text.strip() == '':
+            # If the selected text is empty or contains only spaces, remove 4 spaces if they exist
+            text_up_to_cursor = self.toPlainText()[:start]
+            if text_up_to_cursor.endswith(' ' * 4):
+                cursor.setPosition(start - 4)
+                cursor.setPosition(start, QTextCursor.KeepAnchor)
+                cursor.removeSelectedText()
+        else:
+            # Otherwise, dedent each line
+            lines = selected_text.split("\n")
+            dedented_lines = [line[4:] if line.startswith('    ') else line for line in lines]
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            cursor.insertText("\n".join(dedented_lines))
 
-        cursor.setPosition(start)
-        cursor.setPosition(start + len("\n".join(dedented_lines)), QTextCursor.KeepAnchor)
-        self.setTextCursor(cursor)
+            cursor.setPosition(start)
+            cursor.setPosition(start + len("\n".join(dedented_lines)), QTextCursor.KeepAnchor)
+            self.setTextCursor(cursor)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
