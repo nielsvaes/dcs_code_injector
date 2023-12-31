@@ -94,7 +94,7 @@ class CodeTextEdit(QPlainTextEdit):
         text_up_to_cursor = self.toPlainText()[:cursor_pos]  # get text up to cursor
 
         # split the text into words by spaces, newline characters or non-alphanumeric characters
-        words = re.findall(r'\b\w+\b', text_up_to_cursor)
+        words = re.split(r'[\s{\[\("\'|\\]+', text_up_to_cursor)
 
         # the last word in the list will be the word you want
         if words:
