@@ -34,7 +34,7 @@ class CodeTextEdit(QPlainTextEdit):
         SimpleLuaHighlighter(self.document())
 
 
-        keywords = EZSettings().get(sk.MOOSE_autocomplete) + EZSettings().get(sk.mist_autocomplete)
+        keywords = EZSettings().get(sk.MOOSE_autocomplete, []) + EZSettings().get(sk.mist_autocomplete, [])
 
         # keywords = ["GROUP:Find()", "SPAWN"]
 
@@ -112,6 +112,9 @@ class CodeTextEdit(QPlainTextEdit):
         at the current cursor's rectangle. If the completion prefix length is greater than 1, it also adjusts
         the width of the completer's popup based on the size hint of the first column and the vertical scrollbar.
         """
+
+        if not EZSettings().get(sk.enable_code_completion, True):
+            return
 
         prefix = self.get_word_before_cursor()
         if prefix in self.completer.model().stringList():

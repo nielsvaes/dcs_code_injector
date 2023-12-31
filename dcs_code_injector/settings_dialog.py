@@ -42,17 +42,6 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         lines = moose_mist_updater.update_from_url(url)
 
         EZSettings().set(settings_key, lines)
-        print(lines)
-
-        # with open(downloaded_file, "r", encoding="utf-8") as readfile:
-        #     lines = readfile.readlines()
-        #     clean_lines = []
-        #     for line in lines:
-        #         line = line.strip()
-        #         if len(line):
-        #             clean_lines.append(line)
-
-
 
     @staticmethod
     def clear_code(settings_key):
