@@ -5449,6 +5449,7 @@ class CodeTextEdit(QPlainTextEdit):
     'TASK_CAPTURE_DISPATCHER:Link_AI_A2G_Dispatcher(AI_A2G_Dispatcher)',
     'TASK_CAPTURE_DISPATCHER:ManageTasks()']
 
+        # keywords = ["GROUP:Find()", "SPAWN"]
         # d = {
         #     "GROUP": ["New()", "Find()"],
         #     "SPAWN": ["FromVec2()", "Init()"],
@@ -5481,8 +5482,8 @@ class CodeTextEdit(QPlainTextEdit):
         completion (str): The autocompletion text to be inserted.
         """
 
-        tc = self.textCursor()
-        tc.select(QTextCursor.WordUnderCursor)
+        tc: QTextCursor = self.textCursor()
+        # tc.select(QTextCursor.WordUnderCursor)
         if self.get_word_before_cursor() == completion:
             return
 
@@ -5491,7 +5492,6 @@ class CodeTextEdit(QPlainTextEdit):
         text = self.toPlainText()
         if pos < len(text):
             char_to_right = text[pos]
-
 
         if char_to_right in [")", "\"", "'", "]", "}"]:
             tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
@@ -5504,20 +5504,6 @@ class CodeTextEdit(QPlainTextEdit):
         tc.insertText(completion[-extra:])
         self.setTextCursor(tc)
 
-    def text_under_cursor(self):
-        """
-        Returns the word under the cursor.
-
-        The cursor is moved one position to the left before selecting the word under the cursor.
-
-        Returns:
-        str: The word under the cursor.
-        """
-
-        tc = self.textCursor()
-        tc.select(QTextCursor.WordUnderCursor)
-        return tc.selectedText()
-
     def get_word_before_cursor(self):
         """
         Returns the word before the cursor.
@@ -5527,18 +5513,15 @@ class CodeTextEdit(QPlainTextEdit):
         cursor_pos = self.textCursor().position()  # get current cursor position
         text_up_to_cursor = self.toPlainText()[:cursor_pos]  # get text up to cursor
 
-        # split the text into words by spaces or newline characters
-        words = text_up_to_cursor.split()
+        # split the text into words by spaces, newline characters or non-alphanumeric characters
+        words = re.findall(r'\b\w+\b', text_up_to_cursor)
 
         # the last word in the list will be the word you want
         if words:
             selected_word = words[-1]
         else:
             selected_word = ""
-
-
         return selected_word
-
 
     def complete(self):
         """
@@ -5697,7 +5680,6 @@ class CodeTextEdit(QPlainTextEdit):
             if variable_name not in self.completer.model().stringList():
                 self.completer.model().setStringList(list(set(self.completer.model().stringList() + [variable_name])))
 
-
     def __insert_code(self, text, move_back_pos):
         """
         Inserts the given text at the current cursor position.
@@ -5733,29 +5715,14 @@ class CodeTextEdit(QPlainTextEdit):
             return
 
         if event.key() == Qt.Key_Slash and event.modifiers() == Qt.ControlModifier:
-            cursor = self.textCursor()
-            selected_text = cursor.selection().toPlainText()
-            lines = selected_text.split("\n")
-            commented_lines = []
-            for line in lines:
-                if line.startswith("-- "):
-                    line = line.replace("-- ", "")
-                else:
-                    line = "-- " + line
-                commented_lines.append(line)
-
-            self.insertPlainText("\n".join(commented_lines))
-        if event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
-            self.font_size += 1
-            self.update_document_size()
-        if event.key() == Qt.Key_Down and event.modifiers() == Qt.ControlModifier:
-            self.font_size -= 1
-            self.update_document_size()
-        if event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
-            self.__insert_code("BASE:I()", -1)
-        if event.key() == Qt.Key_M and event.modifiers() == Qt.ControlModifier:
-            self.__insert_code("MessageToAll()", -1)
-        if event.key() in [
+            self.handle_control_slash()
+        elif event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
+            self.handle_control_up()
+        elif event.key() == Qt.Key_Down and event.modifiers() == Qt.ControlModifier:
+            self.handle_control_down()
+        elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
+            self.handle_control_p()
+        elif event.key() in [
             Qt.Key.Key_QuoteDbl,
             Qt.Key.Key_Apostrophe,
             Qt.Key.Key_BraceLeft,
@@ -5765,40 +5732,115 @@ class CodeTextEdit(QPlainTextEdit):
             Qt.Key.Key_ParenLeft,
             Qt.Key.Key_ParenRight,
         ]:
-            cursor = self.textCursor()
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.KeepAnchor)
-            if cursor.selectedText() == event.text():
-                cursor.movePosition(QTextCursor.MoveOperation.Right)
-                self.setTextCursor(cursor)
-                return
-
-        if event.key() == Qt.Key_QuoteDbl:
-            self.__insert_code('"', -1)
-        if event.key() == Qt.Key_Apostrophe:
-            self.__insert_code("'", -1)
-        if event.key() == Qt.Key_BraceLeft:
-            self.__insert_code("}", -1)
-        if event.key() == Qt.Key_BracketLeft:
-            self.__insert_code("]", -1)
-        if event.key() == Qt.Key_ParenLeft:
-            self.__insert_code(")", -1)
-
+            self.handle_special_characters(event)
+        elif event.key() == Qt.Key_Tab:
+            self.handle_tab(event)
+        elif event.key() == Qt.Key_Backtab:
+            self.handle_backtab()
+        else:
+            super().keyPressEvent(event)
 
         self.update_keywords()
 
-        super().keyPressEvent(event)
+    def handle_control_slash(self):
+        cursor = self.textCursor()
+        selected_text = cursor.selection().toPlainText()
+        lines = selected_text.split("\n")
+        commented_lines = []
+        for line in lines:
+            if line.startswith("-- "):
+                line = line.replace("-- ", "", 1)  # only replace the first occurrence
+            else:
+                line = "-- " + line
+            commented_lines.append(line)
+
+        # replace the selected text with the commented lines
+        cursor.insertText("\n".join(commented_lines))
+
+    def handle_control_up(self):
+        self.font_size += 1
+        self.update_document_size()
+
+    def handle_control_down(self):
+        self.font_size -= 1
+        self.update_document_size()
+
+    def handle_control_p(self):
+        self.__insert_code("BASE:I()", -1)
+
+    def handle_special_characters(self, event):
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.KeepAnchor)
+        if cursor.selectedText() == event.text():
+            cursor.movePosition(QTextCursor.MoveOperation.Right)
+            self.setTextCursor(cursor)
+            return
+
+        if event.key() == Qt.Key_QuoteDbl:
+            self.__insert_code('"' * 2, -1)
+        elif event.key() == Qt.Key_Apostrophe:
+            self.__insert_code("'" * 2, -1)
+        elif event.key() == Qt.Key_BraceLeft:
+            self.__insert_code("}" * 2, -1)
+        elif event.key() == Qt.Key_BracketLeft:
+            self.__insert_code("]" * 2, -1)
+        elif event.key() == Qt.Key_ParenLeft:
+            self.__insert_code(")" * 2, -1)
+
+    def handle_tab(self, event):
+        cursor = self.textCursor()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        # Swap start and end if start is greater than end
+        if start > end:
+            start, end = end, start
+
+        selected_text = self.document().toPlainText()[start:end]
+        lines = selected_text.split("\n")
+        indented_lines = ['    ' + line for line in lines]  # add 4 spaces at the beginning of each line
+        cursor.setPosition(start)
+        cursor.setPosition(end, QTextCursor.KeepAnchor)
+        cursor.insertText("\n".join(indented_lines))  # replace the selected text with the indented lines
+
+        cursor.setPosition(start)
+        cursor.setPosition(start + len("\n".join(indented_lines)), QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
+    def handle_backtab(self):
+        cursor = self.textCursor()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        # Swap start and end if start is greater than end
+        if start > end:
+            start, end = end, start
+
+        selected_text = self.document().toPlainText()[start:end]
+        lines = selected_text.split("\n")
+        dedented_lines = [line[4:] if line.startswith('    ') else line for line in
+                          lines]  # remove 4 spaces at the beginning of each line if they exist
+        cursor.setPosition(start)
+        cursor.setPosition(end, QTextCursor.KeepAnchor)
+        cursor.insertText("\n".join(dedented_lines))  # replace the selected text with the dedented lines
+
+        cursor.setPosition(start)
+        cursor.setPosition(start + len("\n".join(dedented_lines)), QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
 
         content_rect = self.contentsRect()
-        self.line_number_area.setGeometry(QRect(content_rect.left(), content_rect.top(), self.get_line_number_area_width(), content_rect.height()))
+        self.line_number_area.setGeometry(
+            QRect(content_rect.left(), content_rect.top(), self.get_line_number_area_width(), content_rect.height()))
 
 
 class LineNumberArea(QWidget):
     """
     A custom QWidget that displays line numbers for a CodeTextEdit.
     """
+
     def __init__(self, editor):
         super().__init__(editor)
         self.codeEditor = editor
@@ -5817,6 +5859,7 @@ class PopupItemDelegate(QStyledItemDelegate):
     """
     A custom QStyledItemDelegate that provides custom size hint for QCompleter popup items.
     """
+
     def paint(self, painter, option, index):
         font = QFont("Courier New")
         font.setPointSize(10)
