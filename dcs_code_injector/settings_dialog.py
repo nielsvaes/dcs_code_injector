@@ -38,15 +38,21 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 
     @staticmethod
     def download_code(sending_line_edit, settings_key):
+        # msg_box = QMessageBox()
+
         url = sending_line_edit.text()
         lines = lua_function_parser.update_from_url(url)
+        if len(lines):
+            EZSettings().set(settings_key, lines)
 
-        EZSettings().set(settings_key, lines)
+            QMessageBox().information(None, "Info", "Code completion updated, restart the program to see code completetion updates")
+        else:
+            QMessageBox().warning(None,f"Warning", f"Couldn't download the file at {url}, are you sure it's correct?")
 
     @staticmethod
     def clear_code(settings_key):
         EZSettings().remove(settings_key)
-
+        QMessageBox().information(None, "Info","Code completion updated, restart the program to see code completetion updates")
 
     def open_file_browser(self):
         """
@@ -70,13 +76,17 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
 
         self.txt_log_file.setText(EZSettings().get(sk.log_file, ""))
         self.chk_play_sound_on_mission_scripting_errors.setChecked(EZSettings().get(sk.play_sound_on_mission_scripting_error, True))
-        self.chk_enable_code_completion.setChecked(EZSettings().get(sk.enable_code_completion, True))
         self.spin_offset_time.setValue(EZSettings().get(sk.shift_hours, 0))
         hl_rules = EZSettings().get(sk.log_highlight_rules, {})
         if len(hl_rules):
             self.tree_hilite_rules.set_data(hl_rules)
         else:
             self.tree_hilite_rules.set_data(DEFAULT_HIGHLIGHTING_RULES)
+
+        self.chk_enable_code_completion.setChecked(EZSettings().get(sk.enable_code_completion, True))
+        self.txt_moose_url.setText(EZSettings().get(sk.MOOSE_url, sk.default_MOOSE_url))
+        self.txt_mist_url.setText(EZSettings().get(sk.mist_url, sk.default_mist_url))
+
 
     def save(self):
         """
@@ -88,6 +98,10 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         EZSettings().set(sk.enable_code_completion, self.chk_enable_code_completion.isChecked())
         EZSettings().set(sk.shift_hours, self.spin_offset_time.value())
         EZSettings().set(sk.log_highlight_rules, self.tree_hilite_rules.get_data())
+
+        EZSettings().set(sk.MOOSE_url, self.txt_moose_url.text())
+        EZSettings().set(sk.mist_url, self.txt_mist_url.text())
+
         self.close()
 
 

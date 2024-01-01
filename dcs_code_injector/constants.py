@@ -43,6 +43,11 @@ class SettingConstants:
     enable_code_completion = "enable_code_completion"
     MOOSE_autocomplete = "MOOSE_autocomplete"
     mist_autocomplete = "mist_autocomplete"
-
+    MOOSE_url = "MOOSE_url"
+    mist_url = "mist_url"
+    default_MOOSE_url = "https://raw.githubusercontent.com/FlightControl-Master/MOOSE_INCLUDE/master/Moose_Include_Static/Moose_.lua"
+    default_mist_url = "https://raw.githubusercontent.com/mrSkortch/MissionScriptingTools/master/mist.lua"
 
 sk = SettingConstants
+
+lua_keywords = ['and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while']

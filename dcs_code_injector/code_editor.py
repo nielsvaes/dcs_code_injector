@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt
 
 import re
 from ez_settings import EZSettings
-from .constants import sk
+from .constants import sk, lua_keywords
 from .lua_syntax_highlighter import SimpleLuaHighlighter
 
 
@@ -33,10 +33,8 @@ class CodeTextEdit(QPlainTextEdit):
 
         SimpleLuaHighlighter(self.document())
 
+        keywords = EZSettings().get(sk.MOOSE_autocomplete, []) + EZSettings().get(sk.mist_autocomplete, []) + lua_keywords
 
-        keywords = EZSettings().get(sk.MOOSE_autocomplete, []) + EZSettings().get(sk.mist_autocomplete, [])
-
-        # keywords = ["GROUP:Find()", "SPAWN"]
 
         self.completer = CustomCompleter(keywords)
         self.completer.activated.connect(self.insert_completion)
@@ -255,10 +253,16 @@ class CodeTextEdit(QPlainTextEdit):
 
     def update_keywords(self):
         text = self.toPlainText()
-        matches = re.findall(r'\b([a-zA-Z_][a-zA-Z_0-9]*)\s*=', text)
-        for variable_name in matches:
-            if variable_name not in self.completer.model().stringList():
+        matches = re.findall(r'\b([a-zA-Z_][a-zA-Z_0-9]*)\s*=|function\s+(.*)', text)
+        for match in matches:
+            # match is a tuple where the first item is the variable name before "=" (if any)
+            # and the second item is everything after "function " until the end of the line (if any)
+            variable_name, function_signature = match
+            if variable_name and variable_name not in self.completer.model().stringList():
                 self.completer.model().setStringList(list(set(self.completer.model().stringList() + [variable_name])))
+            if function_signature and function_signature not in self.completer.model().stringList():
+                self.completer.model().setStringList(
+                    list(set(self.completer.model().stringList() + [function_signature])))
 
     def __insert_code(self, text, move_back_pos):
         """
@@ -317,7 +321,7 @@ class CodeTextEdit(QPlainTextEdit):
             self.handle_tab()
         elif event.key() == Qt.Key_Backtab:
             self.handle_backtab()
-        if event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Enter, Qt.Key_Return):
+        elif event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Enter, Qt.Key_Return):
             super().keyPressEvent(event)
             self.check_cursor_position()
         else:
