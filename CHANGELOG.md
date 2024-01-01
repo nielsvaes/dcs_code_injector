@@ -1,3 +1,7 @@
+## 1.4.0
+* Added code completion
+* Added code editor quality of life updates
+
 ## 1.3.0
 * Flipped the connection: DCS is now the server and the Code Injector is the client. This help gain back just about all lost frames from the hook code. 
 * Added a version dialog
