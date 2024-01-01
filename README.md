@@ -96,12 +96,27 @@ I've added some "default" highlighting colors for the log. These are the colors 
 You need to restart the application for the new rules to be applied. If you want to get the defaults back, just delete all the rules and restart. 
 
 
+## 🎨 Code completion
+
+The Code Injector supports some basic code completion for lightweight Lua, MOOSE and Mist
+![code_completion](https://github.com/nielsvaes/dcs_code_injector/assets/7821618/e2b399d4-86f7-40cb-8d55-b4f0164a25e1)
+
+You can update code completion for MOOSE and Mist from the settings
+![image](https://github.com/nielsvaes/dcs_code_injector/assets/7821618/e4aaf417-0abc-49a2-9d52-06ff835f8a3f)
+
+- Lua keywords are completed
+- Variable names in the document are completed
+- Function definitions in the document are completed
+- It's a "dumb" completion model, it doesn't understand context, meaning:
+```Lua
+my_group = GROUP:FindByName("goose_and_maverick") -- <=== GROUP:FindByName... will be auto completed
+my_group:GetVec3() -- <== "my_group" will be autocompleted, but "GetVec3()" will not be, since it doesn't know that "my_group" is a MOOSE GROUP
+```
+
 
 ## 🗺️Future plans
 #### REPL
 - Better code highlighting
-- Code completion
-- Just a better all-round coding feel
 
 #### Other parts
 The REPL is actually just a small part of larger project I had in mind. Future plans include:
