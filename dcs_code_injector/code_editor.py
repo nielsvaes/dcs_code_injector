@@ -416,15 +416,15 @@ class CodeTextEdit(QPlainTextEdit):
                 cursor.setPosition(start, QTextCursor.KeepAnchor)
                 cursor.removeSelectedText()
         else:
-            # Otherwise, dedent each line
+            # Otherwise, unindent each line
             lines = selected_text.split("\n")
-            dedented_lines = [line[4:] if line.startswith('    ') else line for line in lines]
+            unindented_lines = [line[4:] if line.startswith('    ') else line for line in lines]
             cursor.setPosition(start)
             cursor.setPosition(end, QTextCursor.KeepAnchor)
-            cursor.insertText("\n".join(dedented_lines))
+            cursor.insertText("\n".join(unindented_lines))
 
             cursor.setPosition(start)
-            cursor.setPosition(start + len("\n".join(dedented_lines)), QTextCursor.KeepAnchor)
+            cursor.setPosition(start + len("\n".join(unindented_lines)), QTextCursor.KeepAnchor)
             self.setTextCursor(cursor)
 
     def resizeEvent(self, event):
