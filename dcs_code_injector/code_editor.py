@@ -52,7 +52,7 @@ class CodeTextEdit(QPlainTextEdit):
                                                 },
                                             """)
         self.textChanged.connect(self.complete)
-        # self.textChanged.connect(self.update_keywords)
+        self.previous_block_number = -1
 
     def insert_completion(self, completion):
         """
@@ -63,25 +63,16 @@ class CodeTextEdit(QPlainTextEdit):
         """
 
         tc: QTextCursor = self.textCursor()
-        # tc.select(QTextCursor.WordUnderCursor)
-        if self.get_word_before_cursor() == completion:
-            return
 
-        char_to_right = None
-        pos = self.textCursor().position()
-        text = self.toPlainText()
-        if pos < len(text):
-            char_to_right = text[pos]
+        # Get the length of the text that has been typed by the user
+        length_of_typed_text = len(self.completer.completionPrefix())
 
-        if char_to_right in [")", "\"", "'", "]", "}"]:
-            tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
-            tc.movePosition(QTextCursor.MoveOperation.Left)
-        else:
-            tc.movePosition(QTextCursor.MoveOperation.Left)
-            tc.movePosition(QTextCursor.MoveOperation.EndOfWord)
+        # Move the cursor backwards by the length of the typed text
+        tc.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, length_of_typed_text)
 
-        extra = len(completion) - len(self.completer.completionPrefix())
-        tc.insertText(completion[-extra:])
+        # Replace the selected text (the typed text) with the completion
+        tc.insertText(completion)
+
         self.setTextCursor(tc)
 
     def get_word_before_cursor(self):
@@ -285,6 +276,17 @@ class CodeTextEdit(QPlainTextEdit):
         self.setTextCursor(cursor)
         self.insertPlainText(selected_text)
 
+    def check_cursor_position(self):
+        cursor = self.textCursor()
+        block_number = cursor.blockNumber()
+        if block_number != self.previous_block_number:
+            self.previous_block_number = block_number
+            self.update_keywords()
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        self.check_cursor_position()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """
         Handles key press events.
@@ -311,25 +313,16 @@ class CodeTextEdit(QPlainTextEdit):
             self.handle_control_down()
         elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
             self.handle_control_p()
-        # elif event.key() in [
-        #     Qt.Key.Key_QuoteDbl,
-        #     Qt.Key.Key_Apostrophe,
-        #     Qt.Key.Key_BraceLeft,
-        #     Qt.Key.Key_BraceRight,
-        #     Qt.Key.Key_BracketLeft,
-        #     Qt.Key.Key_BracketRight,
-        #     Qt.Key.Key_ParenLeft,
-        #     Qt.Key.Key_ParenRight,
-        # ]:
-        #     self.handle_special_characters(event)
         elif event.key() == Qt.Key_Tab:
             self.handle_tab()
         elif event.key() == Qt.Key_Backtab:
             self.handle_backtab()
+        if event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Enter, Qt.Key_Return):
+            super().keyPressEvent(event)
+            self.check_cursor_position()
         else:
             super().keyPressEvent(event)
 
-        self.update_keywords()
 
     def handle_control_slash(self):
         cursor = self.textCursor()
