@@ -14,7 +14,8 @@ from .constants import sk, DEFAULT_HIGHLIGHTING_RULES
 
 SETTINGS_DIR = os.path.join(os.path.expanduser('~'),'Documents', "dcs_code_injector")
 SETTINGS_PATH = os.path.join(SETTINGS_DIR, "settings.json")
-SPLASH_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "splashscreens")
+UI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui")
+SPLASH_DIR = os.path.join(UI_DIR, "splashscreens")
 
 application = QApplication()
 
@@ -69,7 +70,8 @@ def main():
 
     application.setWindowIcon(QIcon(ICON))
     application.processEvents()
-    apply_stylesheet(application, "dark_teal.xml")
+
+    apply_stylesheet(application, "dark_teal.xml", css_file=os.path.join(UI_DIR, "extra_style.css"))
     win = CodeInjectorWindow()
 
     splash.finish(win)
