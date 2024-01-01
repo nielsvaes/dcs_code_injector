@@ -7,7 +7,7 @@ import os
 
 from .ui.dcs_code_injector_settings_ui import Ui_settings_dialog
 from .constants import DEFAULT_HIGHLIGHTING_RULES, sk
-from . import moose_mist_updater
+from . import lua_function_parser
 
 
 class SettingsDialog(QDialog, Ui_settings_dialog):
@@ -39,7 +39,7 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
     @staticmethod
     def download_code(sending_line_edit, settings_key):
         url = sending_line_edit.text()
-        lines = moose_mist_updater.update_from_url(url)
+        lines = lua_function_parser.update_from_url(url)
 
         EZSettings().set(settings_key, lines)
 
