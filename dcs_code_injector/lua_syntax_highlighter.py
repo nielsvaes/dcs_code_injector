@@ -242,15 +242,7 @@ class SimpleLuaHighlighter(QSyntaxHighlighter):
                 "regex": rf"{quote}"
             }
 
-        self.rules["between_double_quotes"] = {
-            "format": STYLES["string"],
-            "regex": r'"[^"\\]*(\\.[^"\\]*)*"'
-        }
 
-        self.rules["between_single_quotes"] = {
-            "format": STYLES["string"],
-            "regex": r"'[^'\\]*(\\.[^'\\]*)*'"
-        }
 
         self.rules["num_lit_01"] = {
             "format": STYLES["numbers"],
@@ -311,6 +303,16 @@ class SimpleLuaHighlighter(QSyntaxHighlighter):
         #     "format": STYLES["period_function_call"],
         #     "regex": r'\b(\.)\b\s*(\w+)'
         # }
+
+        self.rules["between_double_quotes"] = {
+            "format": STYLES["string"],
+            "regex": r'"[^"\\]*(\\.[^"\\]*)*"'
+        }
+
+        self.rules["between_single_quotes"] = {
+            "format": STYLES["string"],
+            "regex": r"'[^'\\]*(\\.[^'\\]*)*'"
+        }
 
         self.rules["comment"] = {
             "format": STYLES["comment"],
