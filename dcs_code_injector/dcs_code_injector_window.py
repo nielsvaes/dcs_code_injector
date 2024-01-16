@@ -7,6 +7,7 @@ import os
 import json
 import pathlib
 import socket
+import time
 
 from functools import partial
 from ez_settings import EZSettings
@@ -286,21 +287,37 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
     def send_code(self, code):
-        """
-        Sends code to DCS
+        self.statusbar.showMessage("Trying to send data...")
+        self.stop_button = QPushButton("Stop")
+        self.statusbar.addPermanentWidget(self.stop_button)
+        self.stop_button.clicked.connect(self.stop_sending)
 
-        :param code: <str> the code to be set as the server response
-        """
+        self.thread = QThread()  # Create a new QThread
+        self.worker = CodeSenderWorker(code)  # Create a worker object
+        self.worker.moveToThread(self.thread)  # Move the worker to the thread
 
-        self.add_code_to_log(code)
-        s = socket.socket()
-        s.settimeout(0.5)
-        try:
-            s.connect(('localhost', 45221))
-            s.sendall(code.encode())
-            self.statusbar.showMessage("Data sent successfully", 5000)
-        except ConnectionRefusedError as err:
-            self.add_code_to_log(f"ERROR: {err}\nIs DCS running?", "CODE INJECTOR ERROR")
+        # Connect signals
+        self.thread.started.connect(self.worker.send_code)
+        self.worker.finished.connect(self.on_send_finished)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.update_status.connect(self.add_code_to_log)
+
+        self.thread.start()
+
+    def stop_sending(self):
+        self.worker.stop()  # Stop the worker
+        self.statusbar.clearMessage()
+        self.statusbar.removeWidget(self.stop_button)
+
+    def on_send_finished(self, success, message):
+        if success:
+            self.statusbar.showMessage(message, 5000)
+        else:
+            self.add_code_to_log(message, "CODE INJECTOR ERROR")
+        self.statusbar.removeWidget(self.stop_button)
+        self.statusbar.clearMessage()
 
     @staticmethod
     def play_error_sound():
@@ -385,6 +402,41 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
 
 
+class CodeSenderWorker(QObject):
+    finished = Signal(bool, str)  # Signal to indicate the operation is finished
+    update_status = Signal(str)   # Signal to update the status bar message
+
+    def __init__(self, code):
+        super().__init__()
+        self.code = code
+        self.is_running = True
+
+    def send_code(self):
+        start_time = time.time()
+        while self.is_running and (time.time() - start_time) < 3:
+            try:
+                s = socket.socket()
+                s.settimeout(0.5)
+                s.connect(('localhost', 45221))
+                s.sendall(self.code.encode())
+                response = s.recv(1024).decode()
+                if "MSG_OK" in response:
+                    self.finished.emit(True, "Data sent successfully")
+                    return
+                else:
+                    self.update_status.emit("Received unexpected response from server")
+            except (ConnectionRefusedError, TimeoutError, socket.error) as err:
+                self.update_status.emit(f"ERROR: {err}\nIs DCS running?")
+            finally:
+                s.close()
+                if not self.is_running:
+                    break
+                time.sleep(0.1)
+
+        self.finished.emit(False, "Failed to connect within 3 seconds")
+
+    def stop(self):
+        self.is_running = False
 
 
 

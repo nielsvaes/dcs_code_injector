@@ -1,3 +1,6 @@
+## 1.4.1
+* Fixed a bug where the code wasn't reliably sent to DCS. You need to do Tools > Copy Hook File to make sure it works. 
+
 ## 1.4.0
 * Added code completion
 * Added code editor quality of life updates

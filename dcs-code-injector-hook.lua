@@ -37,7 +37,7 @@ local function init()
             until err or chunk == nil
 
             if response:len() > 1 then
-                -- thanks for this, trampi
+                -- Execute the received code in the mission
                 local mission_string =
                 [[
                     local ok, err = pcall(a_do_script(
@@ -53,11 +53,21 @@ local function init()
                 ]]
 
                 net.dostring_in('mission', mission_string)
+
+                -- After executing the code, send back a "message received" response
+                local send_ok, send_err = code_injector_client:send("MSG_OK\n")
+                if not send_ok then
+                    log.write("DCS Code Injector", log.ERROR, "Error sending confirmation: " .. tostring(send_err))
+                end
             end
+
+            -- Close the client connection
+            code_injector_client:close()
         else
             return
         end
     end
+
 
     function handler.onSimulationStop()
         log.write("DCS Code Injector", log.INFO, "Simulation stopped, closing connection")
