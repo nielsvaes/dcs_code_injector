@@ -45,14 +45,14 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         if len(lines):
             EZSettings().set(settings_key, lines)
 
-            QMessageBox().information(None, "Info", "Code completion updated, restart the program to see code completetion updates")
+            QMessageBox().information(None, "Info", "Code completion updated, restart the program to see code completion updates")
         else:
             QMessageBox().warning(None,f"Warning", f"Couldn't download the file at {url}, are you sure it's correct?")
 
     @staticmethod
     def clear_code(settings_key):
         EZSettings().remove(settings_key)
-        QMessageBox().information(None, "Info","Code completion updated, restart the program to see code completetion updates")
+        QMessageBox().information(None, "Info","Code completion updated, restart the program to see code completion updates")
 
     def open_file_browser(self):
         """
