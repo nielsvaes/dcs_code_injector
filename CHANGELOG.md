@@ -1,3 +1,9 @@
+## 1.4.2
+* Added ability to pick font for log view
+* Added ability to pick font for code view
+* Added ability to change between Material Neon and Fusion Dark themes
+* Settings typo fix
+
 ## 1.4.1
 * Fixed a bug where the code wasn't reliably sent to DCS. You need to do Tools > Copy Hook File to make sure it works. 
 
