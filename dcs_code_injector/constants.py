@@ -47,6 +47,9 @@ class SettingConstants:
     mist_url = "mist_url"
     default_MOOSE_url = "https://raw.githubusercontent.com/FlightControl-Master/MOOSE_INCLUDE/master/Moose_Include_Static/Moose_.lua"
     default_mist_url = "https://raw.githubusercontent.com/mrSkortch/MissionScriptingTools/master/mist.lua"
+    log_font = "log_font"
+    code_font = "code_font"
+    default_font = "Courier New"
 
 sk = SettingConstants
 

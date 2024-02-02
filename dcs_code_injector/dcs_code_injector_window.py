@@ -65,7 +65,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.connect_ui_signals()
         self.load()
 
-        self.txt_log.setStyleSheet(f"font: {EZSettings().get('log_font_size', 10)}pt 'Courier New';")
         for i in range(self.tab_widget.count()):
             self.tab_widget.widget(i).font_size = EZSettings().get(sk.code_font_size, 10)
             self.tab_widget.widget(i).update_document_size()
@@ -131,6 +130,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_copy_hook_file.triggered.connect(self.copy_hook_file)
         self.action_increase_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), True))
         self.action_decrease_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), False))
+        self.action_pick_log_font.triggered.connect(lambda _: self.pick_font("log"))
         self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
         self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
         self.action_about.triggered.connect(lambda: self.about_dialog.exec_())
@@ -318,6 +318,16 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             self.add_code_to_log(message, "CODE INJECTOR ERROR")
         self.statusbar.removeWidget(self.stop_button)
         self.statusbar.clearMessage()
+
+    def pick_font(self, view):
+        font: QFont
+        ok, font = QFontDialog.getFont()
+        if ok:
+            if view == "log":
+                self.txt_log.set_font(font.family())
+                self.txt_log.set_font_size(font.pointSize())
+            else:
+                pass
 
     @staticmethod
     def play_error_sound():

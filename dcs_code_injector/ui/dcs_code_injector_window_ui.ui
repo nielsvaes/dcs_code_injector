@@ -74,9 +74,11 @@
     </property>
     <addaction name="action_increase_log_font_size"/>
     <addaction name="action_decrease_log_font_size"/>
+    <addaction name="action_pick_log_font"/>
     <addaction name="separator"/>
     <addaction name="action_increase_code_font_size"/>
     <addaction name="action_decrease_code_font_size"/>
+    <addaction name="action_pick_code_font"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -172,6 +174,16 @@
   <action name="action_about">
    <property name="text">
     <string>About...</string>
+   </property>
+  </action>
+  <action name="action_pick_log_font">
+   <property name="text">
+    <string>Pick log font</string>
+   </property>
+  </action>
+  <action name="action_pick_code_font">
+   <property name="text">
+    <string>Pick code font</string>
    </property>
   </action>
  </widget>
