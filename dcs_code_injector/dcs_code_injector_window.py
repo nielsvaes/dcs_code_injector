@@ -65,9 +65,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.connect_ui_signals()
         self.load()
 
-        for i in range(self.tab_widget.count()):
-            self.tab_widget.widget(i).font_size = EZSettings().get(sk.code_font_size, 10)
-            self.tab_widget.widget(i).update_document_size()
+        # self.update_code_views_font()
 
         self.timer = QTimer()
         self.timer.setInterval(500)
@@ -79,6 +77,9 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.show()
         self.init_done = True
 
+    # def update_code_views_font(self):
+    #     for i in range(self.tab_widget.count()):
+    #         self.tab_widget.widget(i).update_font()
 
     def read_log(self):
         """
@@ -133,6 +134,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_pick_log_font.triggered.connect(lambda _: self.pick_font("log"))
         self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
         self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
+        self.action_pick_code_font.triggered.connect(lambda _: self.pick_font("code"))
         self.action_about.triggered.connect(lambda: self.about_dialog.exec_())
 
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
@@ -326,8 +328,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             if view == "log":
                 self.txt_log.set_font(font.family())
                 self.txt_log.set_font_size(font.pointSize())
-            else:
-                pass
+            elif view == "code":
+                for i in range(self.tab_widget.count()):
+                    self.tab_widget.widget(i).set_font(font.family())
+                    self.tab_widget.widget(i).set_font_size(font.pointSize())
+                    self.tab_widget.widget(i).update_font()
 
     @staticmethod
     def play_error_sound():

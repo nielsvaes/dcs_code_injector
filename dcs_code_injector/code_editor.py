@@ -18,10 +18,12 @@ class CodeTextEdit(QPlainTextEdit):
 
         super().__init__()
 
-        self.font_size = 10
+        self.font_size = EZSettings().get(sk.code_font_size, 10)
+        self.font = EZSettings().get(sk.code_font, sk.default_font)
+        self.update_font()
+
         self.line_numbers_padding = 5
         self.highlight_color = QColor(29, 233, 182)
-        self.update_document_size()
 
         self.line_number_area = LineNumberArea(self)
 
@@ -235,13 +237,6 @@ class CodeTextEdit(QPlainTextEdit):
 
         self.setExtraSelections(extra_selections)
 
-    def update_document_size(self):
-        """
-        Updates the document size based on the font size.
-        """
-
-        self.setStyleSheet(f"font: {self.font_size}pt 'Courier New';")
-
     def get_selected_text(self):
         """
         Returns the selected text in the text edit.
@@ -263,6 +258,17 @@ class CodeTextEdit(QPlainTextEdit):
             if function_signature and function_signature not in self.completer.model().stringList():
                 self.completer.model().setStringList(
                     list(set(self.completer.model().stringList() + [function_signature])))
+
+    def set_font(self, font):
+        self.font = font
+        EZSettings().set(sk.code_font, font)
+
+    def set_font_size(self, font_size):
+        self.font_size = font_size
+        EZSettings().set(sk.code_font_size, font_size)
+
+    def update_font(self):
+        self.setStyleSheet(f"font: {self.font_size}pt '{self.font}';")
 
     def __insert_code(self, text, move_back_pos):
         """
