@@ -1,7 +1,9 @@
 import re
 
-from PySide6.QtWidgets import QMenu
-from PySide6.QtGui import QCursor
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+
+from qt_material import apply_stylesheet
 
 def check_regex(s):
     try:
@@ -42,3 +44,29 @@ def build_menu_from_action_list(actions, menu=None, is_sub_menu=False):
         menu.exec_(cursor.pos())
 
     return menu
+
+def create_dark_palette():
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    palette.setColor(QPalette.WindowText, Qt.white)
+    palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    palette.setColor(QPalette.ToolTipBase, Qt.white)
+    palette.setColor(QPalette.ToolTipText, Qt.white)
+    palette.setColor(QPalette.Text, Qt.white)
+    palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    palette.setColor(QPalette.ButtonText, Qt.white)
+    palette.setColor(QPalette.BrightText, Qt.red)
+    palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.HighlightedText, Qt.black)
+    return palette
+
+
+def set_application_style(style):
+    if style == "Material Neon":
+        apply_stylesheet(qApp, "dark_teal.xml")
+    elif style == "Fusion Dark":
+        qApp.setStyle("Fusion")
+        qApp.setPalette(create_dark_palette())
+

@@ -50,6 +50,9 @@ class SettingConstants:
     log_font = "log_font"
     code_font = "code_font"
     default_font = "Courier New"
+    theme_material_neon = "Material Neon"
+    theme_fusion_dark = "Fusion Dark"
+    theme = "theme"
 
 sk = SettingConstants
 

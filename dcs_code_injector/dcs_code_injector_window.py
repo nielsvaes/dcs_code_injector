@@ -135,6 +135,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
         self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
         self.action_pick_code_font.triggered.connect(lambda _: self.pick_font("code"))
+        self.action_material_neon.triggered.connect(lambda: self.set_application_style(sk.theme_material_neon))
+        self.action_fusion_dark.triggered.connect(lambda: self.set_application_style(sk.theme_fusion_dark))
         self.action_about.triggered.connect(lambda: self.about_dialog.exec_())
 
         self.favorites_widget.new_button_added.connect(self.connect_favorite_button)
@@ -333,6 +335,12 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
                     self.tab_widget.widget(i).set_font(font.family())
                     self.tab_widget.widget(i).set_font_size(font.pointSize())
                     self.tab_widget.widget(i).update_font()
+
+    @staticmethod
+    def set_application_style(style):
+        EZSettings().set(sk.theme, style)
+        QMessageBox().information(None, "Info",
+                                  "Restart the application to apply the new theme")
 
     @staticmethod
     def play_error_sound():

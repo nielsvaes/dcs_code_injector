@@ -9,6 +9,7 @@ from ez_settings import EZSettings
 from qt_material import apply_stylesheet
 
 from . import ICON
+from . import utils
 from .dcs_code_injector_window import CodeInjectorWindow
 from .constants import sk, DEFAULT_HIGHLIGHTING_RULES
 
@@ -71,7 +72,13 @@ def main():
     application.setWindowIcon(QIcon(ICON))
     application.processEvents()
 
-    apply_stylesheet(application, "dark_teal.xml", css_file=os.path.join(UI_DIR, "extra_style.css"))
+    theme =  EZSettings().get(sk.theme, sk.theme_material_neon)
+    if theme == sk.theme_material_neon:
+        apply_stylesheet(application, "dark_teal.xml", css_file=os.path.join(UI_DIR, "extra_style.css"))
+    elif theme == sk.theme_fusion_dark:
+        application.setStyle("Fusion")
+        application.setPalette(utils.create_dark_palette())
+
     win = CodeInjectorWindow()
 
     splash.finish(win)
