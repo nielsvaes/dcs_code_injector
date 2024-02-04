@@ -298,11 +298,6 @@ class CodeTextEdit(QPlainTextEdit):
         self.check_cursor_position()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        """
-        Handles key press events.
-
-        :param event: <QKeyEvent> the key press event
-        """
         if self.completer.popup().isVisible() and event.key() in [
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,
@@ -327,12 +322,27 @@ class CodeTextEdit(QPlainTextEdit):
             self.handle_tab()
         elif event.key() == Qt.Key_Backtab:
             self.handle_backtab()
-        elif event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Enter, Qt.Key_Return):
+        elif event.key() in (Qt.Key_Up, Qt.Key_Down):
             super().keyPressEvent(event)
             self.check_cursor_position()
+        elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            cursor = self.textCursor()
+            current_line = cursor.block().text()
+            indentation = re.match(r"\s*", current_line).group()  # Capture leading whitespace
+            super().keyPressEvent(event)  # Call the parent method to insert the newline
+            self.insertPlainText(indentation)  # Insert the captured indentation
+            self.check_cursor_position()
+        elif event.key() == Qt.Key_Backspace:
+            cursor = self.textCursor()
+            text_up_to_cursor = self.toPlainText()[:cursor.position()]
+            if text_up_to_cursor.endswith('    '):  # Check if the cursor is preceded by 4 spaces
+                cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, 4)
+                cursor.removeSelectedText()
+                return  # Prevent calling super().keyPressEvent(event) to avoid deleting an extra character
+            else:
+                super().keyPressEvent(event)
         else:
             super().keyPressEvent(event)
-
 
     def handle_control_slash(self):
         cursor = self.textCursor()

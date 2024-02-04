@@ -1,3 +1,7 @@
+## 1.4.3
+* Keeping indentation when pressing enter.
+* Backspace will remove any leading 4 x space to jump back an indentation level
+
 ## 1.4.2
 * Added ability to pick font for log view
 * Added ability to pick font for code view
