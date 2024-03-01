@@ -48,7 +48,7 @@ jobs:
           ($changelog | Select-Object -First $last_change -Skip 1) -join "`n" | Out-File .\RELEASENOTES.md
 
       - name: "Create Release"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@ 4634c16e79c963813287e889244c50009e7f0981
         env:
           GITHUB_TOKEN: ${{ secrets.REL_TOKEN }}
         with:
