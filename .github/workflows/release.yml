@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Set up Python environment"
         uses: ./.github/actions/setup-python
@@ -18,7 +18,7 @@ jobs:
         uses: ./.github/actions/build-app
 
       - name: "Upload dci binaries"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dci_binaries
           path: dist/
@@ -28,13 +28,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Set up Python environment"
         uses: ./.github/actions/setup-python
 
       - name: "Download dci binaries"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dci_binaries
 
@@ -48,7 +48,7 @@ jobs:
           ($changelog | Select-Object -First $last_change -Skip 1) -join "`n" | Out-File .\RELEASENOTES.md
 
       - name: "Create Release"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.REL_TOKEN }}
         with:
@@ -67,13 +67,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Set up Python environment"
         uses: ./.github/actions/setup-python
 
       - name: "Download dci binaries"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dci_binaries
 
@@ -88,5 +88,5 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          skip_existing: true
+          skip-existing: true
           verbose: true
