@@ -1,3 +1,8 @@
+## 1.4.4
+* Various bug fixes 
+* Hook file will be automatically copied every time the application starts
+* Stability improvements when executing code in the game. Whenever DCS needs to run code, there's a chance it will pause for a fraction of a second. Ideally the server runs in a separate thread, but I don't have the energy to research how to make a compiled C++ DLL right now to do that. Have to look into the Olympus guys' code maybe. Anyway, never eat yellow snow. 
+
 ## 1.4.3
 * Keeping indentation when pressing enter.
 * Backspace will remove any leading 4 x space to jump back an indentation level

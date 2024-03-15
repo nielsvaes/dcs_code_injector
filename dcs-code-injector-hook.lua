@@ -27,7 +27,7 @@ local function init()
         local code_injector_client = DCSCI.server:accept()
 
         if code_injector_client then
-            code_injector_client:settimeout(0)
+            code_injector_client:settimeout(0.005)
 
             local chunk, err, partial
             local response = ""

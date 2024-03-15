@@ -10,6 +10,7 @@ from .lua_syntax_highlighter import SimpleLuaHighlighter
 
 
 class CodeTextEdit(QPlainTextEdit):
+    execute_code = Signal(str)
     def __init__(self):
         """
         Constructor for the CodeTextEdit class.
@@ -157,10 +158,11 @@ class CodeTextEdit(QPlainTextEdit):
 
     def update_line_number_area(self, rect, dy):
         """
+        Updates the line number area when the document is scrolled or the editor is resized.
 
-        :param rect:
-        :param dy:
-        :return:
+        Parameters:
+            rect (QRect): The rectangle in the viewport that needs to be updated.
+            dy (int): The amount of vertical scroll. If non-zero, the line number area is scrolled accordingly.
         """
         if dy:
             self.line_number_area.scroll(0, dy)
@@ -260,14 +262,29 @@ class CodeTextEdit(QPlainTextEdit):
                     list(set(self.completer.model().stringList() + [function_signature])))
 
     def set_font(self, font):
+        """
+        Sets the font used in the text editor.
+
+        Parameters:
+            font (str): The name of the font to be set.
+        """
         self.font = font
         EZSettings().set(sk.code_font, font)
 
     def set_font_size(self, font_size):
+        """
+        Sets the font size used in the text editor.
+
+        Parameters:
+            font_size (int): The size of the font to be set.
+        """
         self.font_size = font_size
         EZSettings().set(sk.code_font_size, font_size)
 
     def update_font(self):
+        """
+        Applies the current font and font size settings to the text editor.
+        """
         self.setStyleSheet(f"font: {self.font_size}pt '{self.font}';")
 
     def __insert_code(self, text, move_back_pos):
@@ -287,6 +304,9 @@ class CodeTextEdit(QPlainTextEdit):
         self.insertPlainText(selected_text)
 
     def check_cursor_position(self):
+        """
+        Checks if the cursor has moved to a new block (line) and updates the autocompletion keywords if necessary.
+        """
         cursor = self.textCursor()
         block_number = cursor.blockNumber()
         if block_number != self.previous_block_number:
@@ -294,57 +314,78 @@ class CodeTextEdit(QPlainTextEdit):
             self.update_keywords()
 
     def mousePressEvent(self, event):
+        """
+        Overrides the mouse press event to check the cursor position when the mouse is clicked.
+
+        Parameters:
+            event (QMouseEvent): The mouse event.
+        """
         super().mousePressEvent(event)
         self.check_cursor_position()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if self.completer.popup().isVisible() and event.key() in [
-            Qt.Key.Key_Enter,
-            Qt.Key.Key_Return,
-            Qt.Key.Key_Up,
-            Qt.Key.Key_Down,
-            Qt.Key.Key_Tab,
-            Qt.Key.Key_Backtab,
-        ]:
-            self.completer.popup().close()
-            event.ignore()
-            return
+        """
+        Overrides the key press event to add custom behavior for certain key combinations.
 
-        if event.key() == Qt.Key_Slash and event.modifiers() == Qt.ControlModifier:
-            self.handle_control_slash()
-        elif event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
-            self.handle_control_up()
-        elif event.key() == Qt.Key_Down and event.modifiers() == Qt.ControlModifier:
-            self.handle_control_down()
-        elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
-            self.handle_control_p()
-        elif event.key() == Qt.Key_Tab:
-            self.handle_tab()
-        elif event.key() == Qt.Key_Backtab:
-            self.handle_backtab()
-        elif event.key() in (Qt.Key_Up, Qt.Key_Down):
-            super().keyPressEvent(event)
-            self.check_cursor_position()
-        elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            cursor = self.textCursor()
-            current_line = cursor.block().text()
-            indentation = re.match(r"\s*", current_line).group()  # Capture leading whitespace
-            super().keyPressEvent(event)  # Call the parent method to insert the newline
-            self.insertPlainText(indentation)  # Insert the captured indentation
-            self.check_cursor_position()
-        elif event.key() == Qt.Key_Backspace:
-            cursor = self.textCursor()
-            text_up_to_cursor = self.toPlainText()[:cursor.position()]
-            if text_up_to_cursor.endswith('    '):  # Check if the cursor is preceded by 4 spaces
-                cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, 4)
-                cursor.removeSelectedText()
-                return  # Prevent calling super().keyPressEvent(event) to avoid deleting an extra character
+        Parameters:
+            event (QKeyEvent): The key event.
+        """
+        if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
+            text = self.textCursor().selection().toPlainText()
+            if text == "":
+                text = self.toPlainText()
+            self.execute_code.emit(text)
+        else:
+            if self.completer.popup().isVisible() and event.key() in [
+                Qt.Key.Key_Enter,
+                Qt.Key.Key_Return,
+                Qt.Key.Key_Up,
+                Qt.Key.Key_Down,
+                Qt.Key.Key_Tab,
+                Qt.Key.Key_Backtab,
+            ]:
+                self.completer.popup().close()
+                event.ignore()
+                return
+
+            if event.key() == Qt.Key_Slash and event.modifiers() == Qt.ControlModifier:
+                self.handle_control_slash()
+            elif event.key() == Qt.Key_Up and event.modifiers() == Qt.ControlModifier:
+                self.handle_control_up()
+            elif event.key() == Qt.Key_Down and event.modifiers() == Qt.ControlModifier:
+                self.handle_control_down()
+            elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
+                self.handle_control_p()
+            elif event.key() == Qt.Key_Tab:
+                self.handle_tab()
+            elif event.key() == Qt.Key_Backtab:
+                self.handle_backtab()
+            elif event.key() in (Qt.Key_Up, Qt.Key_Down):
+                super().keyPressEvent(event)
+                self.check_cursor_position()
+            elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter and not event.modifiers() == Qt.ControlModifier:
+                cursor = self.textCursor()
+                current_line = cursor.block().text()
+                indentation = re.match(r"\s*", current_line).group()  # Capture leading whitespace
+                super().keyPressEvent(event)  # Call the parent method to insert the newline
+                self.insertPlainText(indentation)  # Insert the captured indentation
+                self.check_cursor_position()
+            elif event.key() == Qt.Key_Backspace:
+                cursor = self.textCursor()
+                text_up_to_cursor = self.toPlainText()[:cursor.position()]
+                if text_up_to_cursor.endswith('    '):  # Check if the cursor is preceded by 4 spaces
+                    cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, 4)
+                    cursor.removeSelectedText()
+                    return  # Prevent calling super().keyPressEvent(event) to avoid deleting an extra character
+                else:
+                    super().keyPressEvent(event)
             else:
                 super().keyPressEvent(event)
-        else:
-            super().keyPressEvent(event)
 
     def handle_control_slash(self):
+        """
+        Toggles commenting on the selected lines. Adds or removes '-- ' at the start of each selected line.
+        """
         cursor = self.textCursor()
         selected_text = cursor.selection().toPlainText()
         lines = selected_text.split("\n")
@@ -359,18 +400,40 @@ class CodeTextEdit(QPlainTextEdit):
         # replace the selected text with the commented lines
         cursor.insertText("\n".join(commented_lines))
 
+    def update_document_size(self):
+        """
+        Updates the document size based on the current font size, affecting the overall layout and appearance.
+        """
+
+        self.setStyleSheet(f"font: {self.font_size}pt 'Courier New';")
+
     def handle_control_up(self):
+        """
+        Increases the font size of the text editor by one point.
+        """
         self.font_size += 1
         self.update_document_size()
 
     def handle_control_down(self):
+        """
+        Decreases the font size of the text editor by one point.
+        """
         self.font_size -= 1
         self.update_document_size()
 
     def handle_control_p(self):
+        """
+        Inserts a predefined piece of code at the current cursor position. This is a placeholder for custom functionality.
+        """
         self.__insert_code("BASE:I()", -1)
 
     def handle_special_characters(self, event):
+        """
+        Handles the automatic insertion of paired special characters (e.g., quotes, parentheses).
+
+        Parameters:
+            event (QKeyEvent): The key event containing the special character to be handled.
+        """
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.KeepAnchor)
         if cursor.selectedText() == event.text():
@@ -390,6 +453,9 @@ class CodeTextEdit(QPlainTextEdit):
             self.__insert_code(")" * 2, -1)
 
     def handle_tab(self):
+        """
+        Handles the Tab key press for indentation. If text is selected, indents the selection; otherwise, inserts spaces.
+        """
         cursor = self.textCursor()
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
@@ -415,6 +481,9 @@ class CodeTextEdit(QPlainTextEdit):
             self.setTextCursor(cursor)
 
     def handle_backtab(self):
+        """
+        Handles the Shift+Tab key press for unindentation. If text is selected, unindents the selection.
+        """
         cursor = self.textCursor()
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
@@ -444,6 +513,12 @@ class CodeTextEdit(QPlainTextEdit):
             self.setTextCursor(cursor)
 
     def resizeEvent(self, event):
+        """
+        Handles the resize event of the text editor to adjust the line number area accordingly.
+
+        Parameters:
+            event (QResizeEvent): The resize event.
+        """
         super().resizeEvent(event)
 
         content_rect = self.contentsRect()

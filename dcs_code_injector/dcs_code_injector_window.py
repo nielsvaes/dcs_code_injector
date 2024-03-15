@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
-from PySide6.QtCore import Qt
 
 import os
 import json
@@ -73,13 +72,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.timer.start()
 
         self.back_up_settings_file()
+        self.copy_hook_file()
 
         self.show()
         self.init_done = True
 
-    # def update_code_views_font(self):
-    #     for i in range(self.tab_widget.count()):
-    #         self.tab_widget.widget(i).update_font()
 
     def read_log(self):
         """
@@ -213,6 +210,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         code_text_edit = CodeTextEdit()
         code_text_edit.textChanged.connect(self.save_code)
+        code_text_edit.execute_code.connect(self.send_code)
         self.tab_widget.insertTab(self.tab_widget.count() - 1, code_text_edit, "UNNAMED")
 
         self.tab_widget.setCurrentIndex(self.tab_widget.count() - 2)
@@ -291,6 +289,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
     def send_code(self, code):
+        self.add_code_to_log(code)
         self.statusbar.showMessage("Trying to send data...")
         self.stop_button = QPushButton("Stop")
         self.statusbar.addPermanentWidget(self.stop_button)
@@ -396,19 +395,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         dlg = SettingsDialog()
         dlg.exec_()
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """
-        Handles key press events.
-
-        :param event: <QKeyEvent> the key press event
-        """
-
-        if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return and event.modifiers() == Qt.ControlModifier:
-            text = self.tab_widget.currentWidget().textCursor().selection().toPlainText()
-            if text == "":
-                text = self.tab_widget.currentWidget().toPlainText()
-            self.send_code(text)
 
     def closeEvent(self, event):
         """
