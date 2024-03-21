@@ -53,6 +53,7 @@ class SettingConstants:
     theme_material_neon = "Material Neon"
     theme_fusion_dark = "Fusion Dark"
     theme = "theme"
+    copy_hook_on_startup = "copy_hook_on_startup"
 
 sk = SettingConstants
 

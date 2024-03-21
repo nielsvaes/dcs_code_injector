@@ -1,3 +1,6 @@
+## 1.4.5
+* Copying of hook file is now an option in the settings that defaults to False
+
 ## 1.4.4
 * Various bug fixes 
 * Hook file will be automatically copied every time the application starts

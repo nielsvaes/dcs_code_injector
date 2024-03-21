@@ -75,7 +75,8 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         """
 
         self.txt_log_file.setText(EZSettings().get(sk.log_file, ""))
-        self.chk_play_sound_on_mission_scripting_errors.setChecked(EZSettings().get(sk.play_sound_on_mission_scripting_error, True))
+        self.chk_play_sound_on_mission_scripting_error.setChecked(EZSettings().get(sk.play_sound_on_mission_scripting_error, True))
+        self.chk_copy_hook_on_startup.setChecked(EZSettings().get(sk.copy_hook_on_startup, False))
         self.spin_offset_time.setValue(EZSettings().get(sk.shift_hours, 0))
         hl_rules = EZSettings().get(sk.log_highlight_rules, {})
         if len(hl_rules):
@@ -94,7 +95,8 @@ class SettingsDialog(QDialog, Ui_settings_dialog):
         """
 
         EZSettings().set(sk.log_file, self.txt_log_file.text())
-        EZSettings().set(sk.play_sound_on_mission_scripting_error, self.chk_play_sound_on_mission_scripting_errors.isChecked())
+        EZSettings().set(sk.play_sound_on_mission_scripting_error, self.chk_play_sound_on_mission_scripting_error.isChecked())
+        EZSettings().set(sk.copy_hook_on_startup, self.chk_copy_hook_on_startup.isChecked())
         EZSettings().set(sk.enable_code_completion, self.chk_enable_code_completion.isChecked())
         EZSettings().set(sk.shift_hours, self.spin_offset_time.value())
         EZSettings().set(sk.log_highlight_rules, self.tree_hilite_rules.get_data())

@@ -72,7 +72,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.timer.start()
 
         self.back_up_settings_file()
-        self.copy_hook_file()
+        if EZSettings().get(sk.copy_hook_on_startup, False):
+            self.copy_hook_file()
 
         self.show()
         self.init_done = True
@@ -425,7 +426,7 @@ class CodeSenderWorker(QObject):
         while self.is_running and (time.time() - start_time) < 3:
             try:
                 s = socket.socket()
-                s.settimeout(0.5)
+                # s.settimeout(0.5)
                 s.connect(('localhost', 45221))
                 s.sendall(self.code.encode())
                 response = s.recv(1024).decode()
@@ -433,9 +434,10 @@ class CodeSenderWorker(QObject):
                     self.finished.emit(True, "Data sent successfully")
                     return
                 else:
-                    self.update_status.emit("Received unexpected response from server")
+                    self.update_status.emit(f"ERROR: Received unexpected response from server: {response}")
             except (ConnectionRefusedError, TimeoutError, socket.error) as err:
-                self.update_status.emit(f"ERROR: {err}\nIs DCS running?")
+                pass
+                # self.update_status.emit(f"ERROR: {err}\nIs DCS running?")
             finally:
                 s.close()
                 if not self.is_running:
