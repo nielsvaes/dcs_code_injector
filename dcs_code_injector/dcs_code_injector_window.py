@@ -2,7 +2,6 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 
-import os
 import json
 import pathlib
 import socket
@@ -10,15 +9,12 @@ import time
 
 from functools import partial
 from ez_settings import EZSettings
-from datetime import datetime, timedelta
-from pygtail import Pygtail
 
 from .settings_dialog import SettingsDialog
 from .version_dialog import AboutDialog
 from .code_editor import CodeTextEdit
 from .favorites import FavoritesWidget
 from .log_view import LogView
-from .log_highlighter import LogHighlighter
 from .ui.dcs_code_injector_window_ui import Ui_MainWindow
 
 from .constants import sk
@@ -52,24 +48,15 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.about_dialog = AboutDialog()
 
-        self.last_log_file_size = 0
+        # self.last_log_file_size = 0
 
         self.txt_log = LogView()
+        self.txt_log.showSettings.connect(self.show_settings)
+        self.txt_log.playErrorSound.connect(self.play_error_sound)
         self.txt_log_layout.addWidget(self.txt_log)
-        self.log_file = EZSettings().get(sk.log_file, "")
-        self.previous = []
-        LogHighlighter(self.txt_log.document())
-        self.read_log()
 
         self.connect_ui_signals()
         self.load()
-
-        # self.update_code_views_font()
-
-        self.timer = QTimer()
-        self.timer.setInterval(500)
-        self.timer.timeout.connect(self.read_log)
-        self.timer.start()
 
         self.back_up_settings_file()
         if EZSettings().get(sk.copy_hook_on_startup, False):
@@ -78,42 +65,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.show()
         self.init_done = True
 
-
-    def read_log(self):
-        """
-        Reads the log file and updates the log view.
-        Handles the time shifting for the log entries.
-        """
-
-        if not os.path.isfile(self.log_file):
-            self.show_settings()
-            self.log_file = EZSettings().get(sk.log_file, "")
-
-        if not self.init_done:
-            with open(self.log_file, "r") as readfile:
-                self.add_text_to_log(readfile.read())
-
-        for line in Pygtail(self.log_file):
-            try:
-                line = line.replace("                    ", "   ")
-                time_str = line[0:22]
-                time = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
-                shift_hours = EZSettings().get(sk.shift_hours, 0)
-                time += timedelta(hours=shift_hours)
-                shifted_time_str = time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-4]
-                line = line.replace(time_str, shifted_time_str)
-
-                diff = datetime.now() - time
-                if ("mission script error" in line.lower() and
-                        diff.total_seconds() > 0.7 and
-                        self.init_done and
-                        EZSettings().get(sk.play_sound_on_mission_scripting_error, True)):
-                    self.play_error_sound()
-
-                self.add_text_to_log(line)
-            except ValueError as err:
-                self.add_text_to_log(line)
-
     def connect_ui_signals(self):
         """
         Connects the UI signals to their respective slots.
@@ -121,14 +72,16 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.tab_widget.tabBarDoubleClicked.connect(self.rename_tab)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
+
         self.action_settings.triggered.connect(self.show_settings)
         self.action_back_up_settings_file.triggered.connect(self.back_up_settings_file)
-        self.action_clear_log.triggered.connect(self.clear_log)
+        self.action_clear_log.triggered.connect(self.txt_log.clear)
         self.action_search.triggered.connect(self.txt_log.toggle_search)
         self.action_add_new_tab.triggered.connect(lambda _: self.add_new_tab(name="UNNAMED", code="-- add code here"))
         self.action_copy_hook_file.triggered.connect(self.copy_hook_file)
         self.action_increase_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), True))
         self.action_decrease_code_font_size.triggered.connect(lambda _: self.adjust_font_size(self.tab_widget.currentWidget(), False))
+        self.action_log_view_enabled.toggled.connect(self.enabled_log_view)
         self.action_pick_log_font.triggered.connect(lambda _: self.pick_font("log"))
         self.action_increase_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, True))
         self.action_decrease_log_font_size.triggered.connect(lambda _: self.adjust_font_size(self.txt_log, False))
@@ -165,13 +118,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
                 size -= 1
             self.txt_log.setStyleSheet(f"font: {size}pt 'Courier New';")
             EZSettings().set(sk.log_font_size, size)
-
-    def clear_log(self):
-        """
-        "Clears" the log view by just adding 60 newlines to push everything up
-        """
-
-        self.add_text_to_log("\n" * 60)
 
     def connect_favorite_button(self, favorite_button):
         """
@@ -239,6 +185,14 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         self.tab_widget.setTabText(self.tab_widget.currentIndex(), name)
         self.save_code()
 
+    def enabled_log_view(self):
+        enable = self.action_log_view_enabled.isChecked()
+        self.txt_log.enable_updating(enable)
+        if enable:
+            self.splitter.setSizes([500, 200])
+        else:
+            self.splitter.setSizes([0, 4000])
+
     def load(self):
         """
         Loads the settings and initializes the UI accordingly.
@@ -249,6 +203,8 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
                 self.add_new_tab(name=setting.replace("code__", ""), code=EZSettings().get(setting))
             if setting.startswith("btn_"):
                 self.favorites_widget.add_new_button(setting.replace("btn_", ""), EZSettings().get(setting))
+
+        self.action_log_view_enabled.setChecked(EZSettings().get(sk.update_log_view, True))
 
     def save_code(self):
         """
@@ -276,18 +232,7 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
             line_number += 1
         numbered_lines.append(f"\n------------------ /{header_text} -------------------\n")
         complete_text = "\n".join(numbered_lines)
-        self.add_text_to_log(complete_text)
-
-    def add_text_to_log(self, complete_text):
-        """
-        Adds the given text to the log view.
-
-        :param complete_text: <str> the text to be added to the log
-        """
-
-        self.txt_log.moveCursor(QTextCursor.End)
-        self.txt_log.insertPlainText(complete_text)
-        self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
+        self.txt_log.add_text(complete_text)
 
     def send_code(self, code):
         self.add_code_to_log(code)

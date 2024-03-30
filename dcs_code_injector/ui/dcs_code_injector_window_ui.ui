@@ -79,6 +79,7 @@
      <addaction name="action_material_neon"/>
      <addaction name="action_fusion_dark"/>
     </widget>
+    <addaction name="action_log_view_enabled"/>
     <addaction name="action_increase_log_font_size"/>
     <addaction name="action_decrease_log_font_size"/>
     <addaction name="action_pick_log_font"/>
@@ -203,6 +204,17 @@
   <action name="action_fusion_dark">
    <property name="text">
     <string>Fusion Dark</string>
+   </property>
+  </action>
+  <action name="action_log_view_enabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log view enabled</string>
    </property>
   </action>
  </widget>

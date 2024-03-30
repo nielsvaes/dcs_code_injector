@@ -54,6 +54,8 @@ class SettingConstants:
     theme_fusion_dark = "Fusion Dark"
     theme = "theme"
     copy_hook_on_startup = "copy_hook_on_startup"
+    update_log_view = "update_log_view"
+
 
 sk = SettingConstants
 

@@ -8,14 +8,12 @@ import shutil
 from ez_settings import EZSettings
 from qt_material import apply_stylesheet
 
-from . import ICON
-from . import utils
+from . import ICON, utils, UI_DIR, LOGO
 from .dcs_code_injector_window import CodeInjectorWindow
 from .constants import sk, DEFAULT_HIGHLIGHTING_RULES
 
 SETTINGS_DIR = os.path.join(os.path.expanduser('~'),'Documents', "dcs_code_injector")
 SETTINGS_PATH = os.path.join(SETTINGS_DIR, "settings.json")
-UI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui")
 SPLASH_DIR = os.path.join(UI_DIR, "splashscreens")
 
 application = QApplication()
@@ -69,7 +67,7 @@ def main():
     splash = QSplashScreen(QPixmap(splashscreens[random.randint(0, len(splashscreens) - 1)]))
     splash.show()
 
-    application.setWindowIcon(QIcon(ICON))
+    application.setWindowIcon(QIcon(LOGO))
     application.processEvents()
 
     theme =  EZSettings().get(sk.theme, sk.theme_material_neon)

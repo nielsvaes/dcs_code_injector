@@ -1,3 +1,6 @@
+## 1.4.6
+* Added checkbox in the View menu to turn off the log view in case you're using an external log viewer
+
 ## 1.4.5
 * Copying of hook file is now an option in the settings that defaults to False
 
