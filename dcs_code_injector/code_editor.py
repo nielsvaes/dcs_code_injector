@@ -363,6 +363,10 @@ class CodeTextEdit(QPlainTextEdit):
             elif event.key() in (Qt.Key_Up, Qt.Key_Down):
                 super().keyPressEvent(event)
                 self.check_cursor_position()
+            if event.key() == Qt.Key_X and event.modifiers() == Qt.ControlModifier:
+                self.delete_current_line()
+            if event.key() == Qt.Key_D and event.modifiers() == Qt.ControlModifier:
+                self.duplicate_current_line()
             elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter and not event.modifiers() == Qt.ControlModifier:
                 cursor = self.textCursor()
                 current_line = cursor.block().text()
@@ -511,6 +515,19 @@ class CodeTextEdit(QPlainTextEdit):
             cursor.setPosition(start)
             cursor.setPosition(start + len("\n".join(unindented_lines)), QTextCursor.KeepAnchor)
             self.setTextCursor(cursor)
+
+    def delete_current_line(self):
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.LineUnderCursor)
+        cursor.removeSelectedText()
+        cursor.deleteChar()
+
+    def duplicate_current_line(self):
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.LineUnderCursor)
+        line_text = cursor.selectedText()
+        cursor.movePosition(QTextCursor.EndOfLine)
+        cursor.insertText('\n' + line_text)
 
     def resizeEvent(self, event):
         """
