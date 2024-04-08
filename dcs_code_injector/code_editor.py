@@ -356,6 +356,8 @@ class CodeTextEdit(QPlainTextEdit):
                 self.handle_control_down()
             elif event.key() == Qt.Key_P and event.modifiers() == Qt.ControlModifier:
                 self.handle_control_p()
+            elif event.key() == Qt.Key_L and event.modifiers() == Qt.ControlModifier:
+                self.handle_control_l()
             elif event.key() == Qt.Key_Tab:
                 self.handle_tab()
             elif event.key() == Qt.Key_Backtab:
@@ -434,6 +436,13 @@ class CodeTextEdit(QPlainTextEdit):
         Inserts a predefined piece of code at the current cursor position. This is a placeholder for custom functionality.
         """
         self.__insert_code("BASE:I()", -1)
+
+    def handle_control_l(self):
+        """
+        Inserts a predefined piece of code at the current cursor position. This is a placeholder for custom functionality.
+        """
+        loop_string = "for _, each in pairs() do\n\nend"
+        self.__insert_code(loop_string, -9)
 
     def handle_special_characters(self, event):
         """

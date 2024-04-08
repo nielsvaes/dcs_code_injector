@@ -1,3 +1,6 @@
+## 1.4.9
+* Ctrl -L insert basic for-loop text in the editor
+
 ## 1.4.8
 * Bug fix for Ctrl -X
 
