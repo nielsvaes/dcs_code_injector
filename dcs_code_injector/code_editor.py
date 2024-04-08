@@ -363,9 +363,13 @@ class CodeTextEdit(QPlainTextEdit):
             elif event.key() in (Qt.Key_Up, Qt.Key_Down):
                 super().keyPressEvent(event)
                 self.check_cursor_position()
-            if event.key() == Qt.Key_X and event.modifiers() == Qt.ControlModifier:
-                self.delete_current_line()
-            if event.key() == Qt.Key_D and event.modifiers() == Qt.ControlModifier:
+            elif event.key() == Qt.Key_X and event.modifiers() == Qt.ControlModifier:
+                cursor: QCursor = self.textCursor()
+                if cursor.hasSelection():
+                    super().keyPressEvent(event)
+                else:
+                    self.delete_current_line()
+            elif event.key() == Qt.Key_D and event.modifiers() == Qt.ControlModifier:
                 self.duplicate_current_line()
             elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter and not event.modifiers() == Qt.ControlModifier:
                 cursor = self.textCursor()

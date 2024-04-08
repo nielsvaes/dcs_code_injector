@@ -1,7 +1,9 @@
+## 1.4.8
+* Bug fix for Ctrl -X
+
 ## 1.4.7
 * Added keyboard shortcut Ctrl -X to delete the current line
 * Added keyboard shortcut Ctrl -D to duplicate the current line
-
 
 ## 1.4.6
 * Added checkbox in the View menu to turn off the log view in case you're using an external log viewer
