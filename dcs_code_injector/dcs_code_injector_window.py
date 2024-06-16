@@ -301,11 +301,11 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
         from .hook_string import hook_string
 
         saved_games_hooks_folder = pathlib.Path(EZSettings().get(sk.log_file)).parent.parent / "Scripts" / "Hooks"
-        if saved_games_hooks_folder.exists():
-            with open(saved_games_hooks_folder / "dcs-code-injector-hook.lua", "w") as writefile:
-                writefile.write(hook_string)
-        else:
-            QMessageBox.warning(None, "DCS Code Injector", "Can't find the Hooks folder! Did you set the path to your dcs.log file in the Settings?")
+        if not saved_games_hooks_folder.exists():
+            saved_games_hooks_folder.mkdir(parents=True, exist_ok=True)
+
+        with open(saved_games_hooks_folder / "dcs-code-injector-hook.lua", "w") as writefile:
+            writefile.write(hook_string)
 
     @staticmethod
     def on_received(data):
