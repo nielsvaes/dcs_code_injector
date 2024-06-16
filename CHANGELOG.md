@@ -1,3 +1,6 @@
+## 1.4.10
+* Hook folder gets created if it doesn't exist
+
 ## 1.4.9
 * Ctrl -L insert basic for-loop text in the editor
 
