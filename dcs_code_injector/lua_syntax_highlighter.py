@@ -242,8 +242,6 @@ class SimpleLuaHighlighter(QSyntaxHighlighter):
                 "regex": rf"{quote}"
             }
 
-
-
         self.rules["num_lit_01"] = {
             "format": STYLES["numbers"],
             "regex": r'\b[+-]?[0-9]+[lL]?\b'

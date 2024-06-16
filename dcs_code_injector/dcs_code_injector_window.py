@@ -48,8 +48,6 @@ class CodeInjectorWindow(QMainWindow, Ui_MainWindow):
 
         self.about_dialog = AboutDialog()
 
-        # self.last_log_file_size = 0
-
         self.txt_log = LogView()
         self.txt_log.showSettings.connect(self.show_settings)
         self.txt_log.playErrorSound.connect(self.play_error_sound)
