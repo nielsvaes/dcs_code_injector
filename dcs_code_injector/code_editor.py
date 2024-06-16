@@ -7,10 +7,12 @@ import re
 from ez_settings import EZSettings
 from .constants import sk, lua_keywords
 from .lua_syntax_highlighter import SimpleLuaHighlighter
+from .utils import timeit
 
 
 class CodeTextEdit(QPlainTextEdit):
     execute_code = Signal(str)
+    @timeit
     def __init__(self):
         """
         Constructor for the CodeTextEdit class.
@@ -37,7 +39,6 @@ class CodeTextEdit(QPlainTextEdit):
         SimpleLuaHighlighter(self.document())
 
         keywords = EZSettings().get(sk.MOOSE_autocomplete, []) + EZSettings().get(sk.mist_autocomplete, []) + lua_keywords
-
 
         self.completer = CustomCompleter(keywords)
         self.completer.activated.connect(self.insert_completion)
