@@ -1,3 +1,7 @@
+## 1.4.11
+* Use Python 3.12
+* PySide6 v.6.7.2
+
 ## 1.4.10
 * Hook folder gets created if it doesn't exist
 
