@@ -1,8 +1,11 @@
+## ⚠️ I'm not actively working on this anymore and will probably not push any updates in case it stops working with future versions of DCS ⚠️
+<br>
+<br>
+
 [![PyPI - Version](https://img.shields.io/pypi/v/dcs-code-injector)]((https://pypi.org/project/dcs-code-injector/))
 [![Release Pipeline](https://github.com/nielsvaes/dcs_code_injector/actions/workflows/release.yml/badge.svg)](https://github.com/nielsvaes/dcs_code_injector/actions/workflows/release.yml)
 [![Discord](https://img.shields.io/discord/1037079186524876820?label=Discord&logo=discord&logoColor=lightblue)](https://discord.com/invite/jQbWJSK2cw)
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F4PYTO7)
 
 # Supported by JetBrains' Open Source Development Project
 <img src="https://github.com/nielsvaes/dcs_code_injector/assets/7821618/af6bdb1f-3dd4-4e27-be43-c03742874f68" alt="JetBrains" width="200"/>
@@ -10,10 +13,6 @@
 
 
 # 📲 DCS Code Injector
-
-_Don't worry, I'll change the name to something cool later_ 🌴🥥
-
-Questions or concerns? Find me under the name `coconutcockpit` on my Discord server [here](https://discord.com/invite/jQbWJSK2cw).
 
 Here's a video of an older version in action: https://youtu.be/m2tGLFgLp8Y
 
@@ -126,9 +125,6 @@ The REPL is actually just a small part of larger project I had in mind. Future p
 - Plugins
 - and more!
 
-## 🤙Contributing
-I am not a hardcore coder or programmer, so if you are and want to lend a helping hand, GREAT! Fork the project and create a PR with your changes.
-Other ways you can contribute is by reporting issues or posting feature requests on the [Issues](https://github.com/nielsvaes/dcs_code_injector/issues) page of the GitHub repository. I started this project just to make my own life easier, but I would to hear what you might want to use it for!
 
 
 ## 📖License
